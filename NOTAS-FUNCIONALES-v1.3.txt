@@ -1,0 +1,13 @@
+SIGAD v1.3 — Recuperación parcial de estructura SAAMIR
+
+Se recuperó el registro de múltiples expedientes por reingreso, varios rangos por traslado, varios paquetes por lote de tarjetas y múltiples subrangos por bloque de microformas, conservando nombres de arreglos usados por las colecciones existentes.
+Se conservan inicio de sesión único, menú agrupado, dashboard institucional y el tema SIGAD.
+
+IMPORTANTE — NO ES PARIDAD FUNCIONAL COMPLETA CON SAAMIR:
+1) El inventario nuevo por matriz de rangos está temporalmente bloqueado para evitar escribir documentos incompletos. Los inventarios existentes se pueden consultar.
+2) La reproducción exacta de PDF institucional, vista previa e impresión por lotes de tarjetas todavía NO está incorporada.
+3) Las listas de personal, validaciones de rango, reglas de ediciones y auditoría de SAAMIR no se han replicado por completo.
+4) Microformas conserva subrangos pero faltan procedimientos y validaciones del módulo SAAMIR original.
+5) No desplegar en producción; los módulos de escritura deben probarse en ambiente de ensayo usando datos de prueba, con reglas de seguridad revisadas.
+
+La versión está orientada a recuperar la estructura de formularios. No utilizar como sustituto funcional de SAAMIR hasta completar y verificar los flujos anteriores.
