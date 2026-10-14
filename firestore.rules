@@ -1,0 +1,40 @@
+rules_version = '2';
+service cloud.firestore {
+ match /databases/{database}/documents {
+  function signed(){return request.auth != null;}
+  function root(){return signed() && request.auth.uid == 'MmniSKpNWPN2saVja2wVTPaiBnn2';}
+  function userExists(){return signed() && exists(/databases/$(database)/documents/usuarios/$(request.auth.uid));}
+  function me(){return get(/databases/$(database)/documents/usuarios/$(request.auth.uid)).data;}
+  function legacyWrite(m){return m == 'tarjetas' ||
+   ((m == 'inventario' || m == 'reingresos' || m == 'traslados') && me().nombre in ['ALFREDO CRUZADO','ACRUZADO','ROBERTO DAVILA','RDAVILA','JORGE IZQUIERDO','JIZQUIERDO','MANUEL BARANDIARAN','MBARANDIARAN']) ||
+   (m == 'inventario' && me().nombre in ['TEOFILO GABINO','TGABINO']) ||
+   (m == 'microformas' && me().nombre in ['ALFREDO CRUZADO','ACRUZADO']);}
+  function grant(m,a){return signed() && (root() || (userExists() && (
+    ('permisos' in me())
+     ? me().permisos.get(m, {}).get(a, false) == true
+     : (a == 'leer' || (a == 'eliminar' ? me().rol == 'Administrador' : legacyWrite(m)))
+  )));}
+  match /usuarios/{uid} {
+   allow read: if signed();
+   // Se conserva el alta de perfil original, pero ya no puede crear nombres privilegiados.
+   allow create: if signed() && request.auth.uid == uid
+     && request.resource.data.rol == 'Personal de Archivo'
+     && !(request.resource.data.nombre in ['ALFREDO CRUZADO','ACRUZADO','ROBERTO DAVILA','RDAVILA','JORGE IZQUIERDO','JIZQUIERDO','MANUEL BARANDIARAN','MBARANDIARAN','TEOFILO GABINO','TGABINO'])
+     && !('permisos' in request.resource.data);
+   // Solo el propietario de la cuenta general puede modificar autorizaciones.
+   allow update: if root() && uid != request.auth.uid
+     && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['permisos','permisosActualizadosPor','permisosActualizadosEn'])
+     && request.resource.data.permisosActualizadosPor == request.auth.uid
+     && request.resource.data.permisosActualizadosEn == request.time;
+   allow delete: if false;
+  }
+  match /auditoria_logins/{id}{allow create:if signed();allow read:if signed();allow update,delete:if false;}
+  match /censo_institucional/{id}{allow read:if grant('inventario','leer');allow create:if grant('inventario','crear');allow update:if grant('inventario','editar');allow delete:if grant('inventario','eliminar');}
+  match /reingresos/{id}{allow read:if grant('reingresos','leer');allow create:if grant('reingresos','crear');allow update:if grant('reingresos','editar');allow delete:if grant('reingresos','eliminar');}
+  match /traslados/{id}{allow read:if grant('traslados','leer');allow create:if grant('traslados','crear');allow update:if grant('traslados','editar');allow delete:if grant('traslados','eliminar');}
+  match /control_microformas/{id}{allow read:if grant('microformas','leer');allow create:if grant('microformas','crear');allow update:if grant('microformas','editar');allow delete:if grant('microformas','eliminar');}
+  match /tarjetas_paquetes/{id}{allow read:if grant('tarjetas','leer');allow create:if grant('tarjetas','crear');allow update:if grant('tarjetas','editar') && (request.resource.data.get('activo',true) != false || resource.data.get('activo',true) == false || grant('tarjetas','eliminar'));allow delete:if grant('tarjetas','eliminar');}
+  match /contadores/{id}{allow read:if grant('reingresos','leer') || grant('traslados','leer');allow create,update:if id in ['reingresos','traslados'] && (grant('reingresos','crear') || grant('traslados','crear'));allow delete:if false;}
+  match /{path=**}{allow read,write:if false;}
+ }
+}

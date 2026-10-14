@@ -24,8 +24,8 @@
   <script defer src="js/archive360.js"></script>
   <script defer src="js/app.js"></script>
   <script defer src="js/dashboard.js"></script><script defer src="js/institutional-dashboard.js"></script>
-  <script type="module" src="js/operaciones.js"></script>
-<link rel="stylesheet" href="assets/archivo-original.css">
+  <script type="module" src="js/operaciones.js"></script><script type="module" src="js/admin.js"></script>
+<link rel="stylesheet" href="assets/archivo-original.css"><link rel="stylesheet" href="assets/admin.css">
 </head>
 <body><svg xmlns="http://www.w3.org/2000/svg" style="position:absolute;width:0;height:0;overflow:hidden" aria-hidden="true"><defs><filter id="logo-alpha" color-interpolation-filters="sRGB"><feColorMatrix in="SourceGraphic" type="luminanceToAlpha" result="light"/><feComponentTransfer in="light" result="mask"><feFuncA type="table" tableValues="1 0"/></feComponentTransfer><feComposite in="SourceGraphic" in2="mask" operator="in"/></filter></defs></svg>
 
@@ -46,7 +46,7 @@
 <button class="nav-item" data-view="microformas"><span data-icon="box"></span>Control de microformas</button>
 <button class="nav-item" data-view="archivo360"><span data-icon="map"></span>Archivo 360</button>
 <a class="nav-item external" href="https://samicert.ecomindsetgo.com" target="_blank" rel="noopener"><span data-icon="file"></span>SAMICERT <b>↗</b></a>
-<details class="nav-group"><summary><span data-icon="settings"></span> Administración</summary><div class="nav-group-body"><button class="nav-item" data-view="reportes">Reportes</button><button class="nav-item" data-view="auditoria">Auditoría y trazabilidad</button><button class="nav-item" data-view="configuracion">Configuración</button></div></details>
+<details class="nav-group"><summary><span data-icon="settings"></span> Administración</summary><div class="nav-group-body"><button class="nav-item" data-view="reportes">Reportes</button><button class="nav-item" data-view="auditoria">Auditoría y trazabilidad</button><button class="nav-item" data-view="configuracion">Configuración</button><button class="nav-item" id="sigad-admin-entry" data-view="usuarios-admin" hidden>Usuarios y permisos</button></div></details>
 <button class="nav-item" data-view="asistente"><span data-icon="bot"></span>Asistente IA</button>
 </nav><button class="sidebar-user" data-go="configuracion"><span class="avatar" data-icon="user"></span><span><strong class="profile-name">Usuario SIGAD</strong><small>Sesión institucional</small></span><b>›</b></button>    <button id="sigad-global-logout" class="nav-item" type="button"><span data-icon="user"></span>Cerrar sesión</button><div class="sidebar-foot"><span class="dot local"></span><span id="storageStatus">Datos en este navegador</span><small>SIGAD unificado v1 · Archivo Desconcentrado</small></div>
   </aside>
@@ -192,6 +192,14 @@
       <article class="panel"><h3>Historial automático por paquete</h3><p>Ingrese el código visible del paquete (por ejemplo, 26-0150). SIGAD buscará las operaciones relacionadas en los registros existentes; no requiere IDs.</p><div class="int-actions"><input id="packageTimelineCode" placeholder="Código del paquete" style="max-width:320px"><button class="primary" id="packageTimelineSearch" type="button">Buscar historial</button></div><div id="packageTimelineResults" aria-live="polite"></div></article><article class="panel"><div class="filter-row"><input id="auditSearch" placeholder="Buscar acción o detalle"><select id="auditLimit"><option value="50">50 registros</option><option value="100">100 registros</option><option value="500">500 registros</option></select></div><div id="auditList"></div></article>
     </section>
 
+
+<section class="view" id="view-usuarios-admin">
+<div class="view-toolbar"><div><h2>Usuarios y permisos</h2><p>Autorizaciones operativas del sistema · Administración general</p></div><div class="toolbar-actions"><button class="secondary" type="button" id="ua-refresh">Actualizar usuarios</button></div></div>
+<div class="ua-notice" id="ua-status" role="status">Acceso restringido al Administrador General.</div>
+<div class="ua-grid"><article class="panel"><h3>Cuentas registradas</h3><div class="filter-row"><input id="ua-search" placeholder="Buscar por nombre o correo" aria-label="Buscar usuarios"></div><div id="ua-list" class="ua-list"></div></article>
+<article class="panel"><h3 id="ua-form-title">Selecciona un usuario</h3><form id="ua-form" hidden><div class="ua-fields"><label>Nombre de usuario<input id="ua-name" readonly></label><label>Identificador de cuenta<input id="ua-uid" readonly></label></div><p class="ua-hint">Los permisos actuales se muestran automáticamente. Guardar sustituye el conjunto de autorizaciones de esta cuenta; no cambia su contraseña ni su rol.</p><div id="ua-permissions" class="ua-permissions"></div><div class="ua-actions"><button class="primary" type="submit" id="ua-save">Guardar permisos</button><button class="secondary" type="button" id="ua-cancel">Cancelar</button></div></form></article></div>
+<article class="panel"><h3>Gestión de cuentas en plan gratuito</h3><p>Para dar de alta, deshabilitar o eliminar una cuenta, utiliza la consola de autenticación. Desde SIGAD puedes autorizar o retirar las acciones de los usuarios registrados. Los cambios de permisos se validan en las reglas de seguridad.</p></article>
+</section>
     <section class="view" id="view-configuracion"><div class="view-toolbar"><div><h2>Configuración</h2><p>Personalice la interfaz y administre sus respaldos.</p></div></div><article class="panel"><h3>Perfil de este navegador</h3><form id="profileForm" class="form-grid"><label>Nombre para mostrar<input id="profileName" maxlength="80" required value="Alfredo Cruzado"></label><div><button class="primary" type="submit">Guardar nombre</button></div></form><p>Este perfil personaliza la pantalla; no representa una cuenta autenticada.</p></article><article class="panel"><h3>Datos y respaldo</h3><p>Los registros se guardan en este navegador. Descargue un respaldo antes de borrar datos del navegador o cambiar de equipo.</p><button id="settingsBackup" class="primary">Respaldo y restauración</button></article><article class="panel"><h3>Sistemas externos</h3><p>Inventario, reingresos, traslados, tarjetas y microformas comparten los registros institucionales. SAMICERT permanece como sistema externo; su sincronización automática está pendiente.</p></article></section>
   </main>
 <aside id="assistantRail" class="assistant-rail" aria-label="Asistente SIGAD">

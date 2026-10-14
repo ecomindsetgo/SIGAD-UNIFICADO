@@ -1,0 +1,16 @@
+SIGAD v1.8 — ADMINISTRACIÓN DE USUARIOS (PREPARADO PARA DESPLIEGUE)
+
+IMPORTANTE: NO ACTIVAR EN PRODUCCIÓN SIN PROBAR EN PROYECTO DE ENSAYO / EMULADOR Y RESPALDAR REGLAS ACTUALES.
+
+1. Iniciar sesión con el UID administrador MmniSKpNWPN2saVja2wVTPaiBnn2.
+2. El panel aparece en Administración > Usuarios y permisos, SOLO una vez desplegadas las funciones en servidor.
+3. Requisitos: CLI de Firebase, Node 20, proyecto vinculado, servicio Functions habilitado y cuenta con autorización de despliegue.
+4. Instalar: en la raíz ejecutar npm --prefix backend install; firebase use <ID_DE_PROYECTO>; firebase deploy --only functions,firestore:rules.
+5. Validar primero reglas y funciones en proyecto de pruebas; comparar los accesos de TODOS los usuarios antes de trasladar los cambios a producción.
+6. Las funciones verifican el UID en servidor. El panel no puede cambiar ni eliminar la cuenta maestra.
+7. La creación de usuario requiere contraseña inicial de al menos 12 caracteres; compartirla por canal seguro y hacer que el usuario la cambie.
+8. La opción de restablecer contraseña genera un enlace seguro que el administrador debe entregar por canal privado. NO envía correo automáticamente.
+9. Para cancelar acceso con sesiones abiertas a nivel de reglas, suspender cuenta establece activo=false; se comprueba en cada operación de datos.
+10. Las cuentas existentes conservan permisos por nombre SOLO mientras no tengan el campo permisos. El alta de perfiles desde cliente queda bloqueada y solo se crea desde el panel. El backend muestra el equivalente de permisos previos. Cuando se guarda un usuario, escribe permisos explícitos.
+11. No se han modificado cuentas reales ni colecciones históricas. SIGAD aún incluye módulos locales; el alcance de estas reglas cubre las colecciones operativas enumeradas.
+12. La validación integral y de carga/descarga de documentos sigue pendiente.

@@ -103,3 +103,5 @@ if(timelineBtn)timelineBtn.addEventListener('click',async()=>{
 
 // Resúmenes compartidos para el tablero institucional (solo registros consultados).
 window.SIGADOperational={async summary(){if(!auth.currentUser)return null;const result={counts:{},monthly:{},repos:{},recent:[],errors:[]};for(const type of ['inventario','reingresos','traslados','tarjetas','microformas']){try{const rows=await loadRecords(type);result.counts[type]=rows.length;for(const row of rows){const d=row.data;const date=String(d.fecha||d.fechaRecepcion||d.fecInicio||'');if(/^\d{4}-\d{2}/.test(date)){const key=date.slice(0,7);(result.monthly[key]??={})[type]=((result.monthly[key]||{})[type]||0)+1;}if(type==='inventario'){const repo=String(d.repositorio||'Sin especificar').trim();result.repos[repo]=(result.repos[repo]||0)+(Number(d.totalReal)||0);}result.recent.push({type,summary:recordSummary(type,row),date});}}catch(e){result.errors.push(labels[type]+': '+e.message);result.counts[type]=null;}}return result;}};
+
+window.SIGADAuthContext={auth,app};
