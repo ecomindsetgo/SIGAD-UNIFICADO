@@ -13,3 +13,20 @@
 .brand img.brand-logo{filter:url(#logo-alpha) brightness(1.45);mix-blend-mode:normal}
 #reportContent .report-section{overflow-x:auto}.kpi-strip{min-width:0}.kpi{min-width:0;overflow-wrap:anywhere}
 .brand img.brand-logo{filter:url(#logo-alpha) brightness(2.1)}
+
+/* SIGAD v2.9: el asistente está minimizado salvo apertura explícita. */
+body:not(.assistant-open) .assistant-rail{display:none!important}
+body:not(.assistant-open) .assistant-backdrop{display:none!important}
+body.assistant-open .assistant-rail{display:flex!important}
+#openAssistant{display:grid!important}
+body:not(.assistant-open) .app-shell{padding-right:0!important}
+body:not(.assistant-open) .topbar{width:100%!important}
+/* Solo una vista de actividad mensual y de distribución; el tablero operativo usa registros reales. */
+#view-dashboard .dashboard-grid>.activity-panel,#view-dashboard .dashboard-grid>.repository-panel{display:none!important}
+#view-dashboard .dashboard-grid{grid-template-columns:minmax(0,1fr)}
+@media(max-width:1399px){body.assistant-open .assistant-backdrop{display:block!important}}
+@media(max-width:760px){body.assistant-open .assistant-rail{inset:8px!important;width:auto!important;max-width:none!important;max-height:calc(100dvh - 16px)!important}#openAssistant{display:grid!important}}
+
+/* Un solo gráfico de actividad y una única distribución en el tablero general. */
+#view-dashboard .dashboard-grid > .activity-panel,
+#view-dashboard .dashboard-grid > .repository-panel{display:none!important}
