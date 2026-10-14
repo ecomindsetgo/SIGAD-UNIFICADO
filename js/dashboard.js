@@ -59,9 +59,45 @@ return 'Puedo consultar oficios por número, dependencias, paquetes, observacion
 }
 function bindAnswers(){const host=$('#assistantMessages');$$('[data-office-open]',host).forEach(b=>b.onclick=()=>SIGAD.viewOffice(b.dataset.officeOpen));$$('[data-office-answer]',host).forEach(b=>b.onclick=()=>{const r=data().offices.find(x=>x.id===b.dataset.officeAnswer);if(r){lastOffice=r.id;appendBot(officeCard(r))}});$$('[data-package]',host).forEach(b=>b.onclick=()=>{SIGAD.navigate('archivo360');$('#packageSearch').value=b.dataset.package;SIGAD360.search(b.dataset.package);if(innerWidth<1400)closeAssistant()});$$('[data-ask]',host).forEach(b=>b.onclick=()=>send(b.textContent));}
 function appendBot(html){const host=$('#assistantMessages');host.insertAdjacentHTML('beforeend',`<div class="chat-line bot-line"><span class="chat-avatar">${icon('bot')}</span><div class="msg bot">${html}</div></div>`);bindAnswers();host.scrollTop=host.scrollHeight;}
-function send(q){q=String(q??$('#assistantQuery').value).trim().slice(0,1000);if(!q)return;$('#assistantMessages').insertAdjacentHTML('beforeend',`<div class="chat-line user-line"><div class="msg user">${esc(q)}</div><span class="chat-avatar">${icon('user')}</span></div>`);$('#assistantQuery').value='';appendBot(answer(q));SIGAD.log('Consulta al asistente',q);renderDashboard();}
-function openAssistant(){document.body.classList.add('assistant-open');document.body.classList.remove('assistant-collapsed');$('#assistantQuery').focus()}
-function closeAssistant(){document.body.classList.remove('assistant-open');document.body.classList.add('assistant-collapsed');$('#openAssistant').focus()}
+async function enhancedAnswer(q){
+ const s=norm(q);
+ const operational=/inventari|reingres|traslad|tarjeta|microforma|repositorio|actividad mensual|movimientos|registrados|registros operativos/.test(s);
+ const lookup=/historial|buscar|busca|consulta|detalle|paquete|expediente|oficio/.test(s);
+ if(operational && window.SIGADOperational?.summary){
+  const r=await window.SIGADOperational.summary();
+  if(!r)return 'No se pudo consultar la información operativa. Vuelva a iniciar sesión.';
+  const names={inventario:'Inventario',reingresos:'Reingresos',traslados:'Traslados',tarjetas:'Tarjetas',microformas:'Microformas'};
+  let html='<b>Operaciones institucionales</b><ul>'+Object.entries(names).map(([key,label])=>'<li>'+label+': <b>'+(r.counts[key]===null?'No disponible':fmt(r.counts[key]??0))+'</b></li>').join('')+'</ul>';
+  if(/repositorio|distribucion/.test(s))html+='<b>Distribución de inventario por repositorio</b><ul>'+(Object.entries(r.repos).map(([repo,total])=>'<li>'+esc(repo)+': '+fmt(total)+' paquetes registrados</li>').join('')||'<li>Sin datos de inventario accesibles</li>')+'</ul>';
+  if(/mes|actividad|octubre|septiembre|agosto|julio|junio|mayo|abril|marzo|febrero|enero|noviembre|diciembre/.test(s)){
+   const entries=Object.entries(r.monthly).sort((a,b)=>b[0].localeCompare(a[0])).slice(0,12);
+   html+='<b>Actividad mensual disponible</b><ul>'+(entries.map(([ym,row])=>'<li>'+esc(ym)+': '+Object.entries(row).map(([k,v])=>esc(names[k]||k)+' '+fmt(v)).join(' · ')+'</li>').join('')||'<li>Sin registros fechados disponibles</li>')+'</ul>';
+  }
+  if(r.errors.length)html+='<p><small>Consulta parcial: '+esc(r.errors.join(' · '))+'. No se interpretan como cero.</small></p>';
+  html+='<small>Fuente: registros operativos accesibles según permisos de la sesión. Los totales de módulos diferentes no se suman como inventario único.</small>';
+  return html;
+ }
+ if(lookup && window.SIGADOperational?.search){
+  const hit=q.match(/\b(?:\d{2}-\d+[A-Za-z]*|\d+R)\b/i);
+  if(hit){const res=await window.SIGADOperational.search(hit[0]);
+    let html='<b>Coincidencias operativas para '+esc(hit[0])+'</b>';
+    html+=res.items.length?'<ul>'+res.items.map(x=>'<li><b>'+esc(x.modulo)+'</b> · '+esc(x.detalle)+' · '+esc(x.fecha)+' · '+esc(x.responsable)+'</li>').join('')+'</ul>':'<p>No encontré una coincidencia textual en los registros accesibles. La búsqueda no cubre necesariamente todos los rangos.</p>';
+    if(res.errors.length)html+='<small>Consultas no disponibles: '+esc(res.errors.join(', '))+'</small>';
+    return html;
+  }
+ }
+ return answer(q);
+}
+async function send(q){
+ q=String(q??$('#assistantQuery').value).trim().slice(0,1000);if(!q)return;
+ $('#assistantMessages').insertAdjacentHTML('beforeend',`<div class="chat-line user-line"><div class="msg user">${esc(q)}</div><span class="chat-avatar">${icon('user')}</span></div>`);
+ $('#assistantQuery').value='';
+ const btn=$('#btnAsk');if(btn)btn.disabled=true;
+ try{appendBot(await enhancedAnswer(q));}catch(e){appendBot('No pude completar la consulta. Comprueba que la sesión esté verificada y que tengas acceso al módulo.');}
+ finally{if(btn)btn.disabled=false;}
+ // No registrar el texto de consultas potencialmente confidenciales en la bitácora local.
+}
+
 function search(){const q=$('#globalSearch').value.trim(),s=norm(q),d=data();const mods=[['dashboard','Dashboard'],['devoluciones','Devolución de Cargos'],['archivo360','Archivo 360'],['transferencias','Transferencias'],['eliminacion','Eliminación Documental'],['reportes','Reportes'],['auditoria','Auditoría'],['configuracion','Configuración']];let html=mods.filter(x=>!s||norm(x[1]).includes(s)).map(x=>`<button data-search-view="${x[0]}">${icon('box')}<span><strong>${x[1]}</strong><small>Módulo SIGAD</small></span>›</button>`).join('');if(s){html+=d.offices.filter(x=>norm([x.number,x.recipient,x.recipientRole,...(x.dependencies||[]).map(z=>z.name)].join(' ')).includes(s)).slice(0,20).map(x=>`<button data-search-office="${esc(x.id)}">${icon('file')}<span><strong>Oficio ${esc(x.number)}</strong><small>${esc(x.recipientRole)} · ${esc(x.status)}</small></span>›</button>`).join('');html+=`<button id="searchAsk">${icon('bot')}<span>Consultar al asistente: <b>${esc(q)}</b></span>›</button>`}$('#searchResults').innerHTML=html;$$('[data-search-view]').forEach(b=>b.onclick=()=>{$('#searchDialog').close();SIGAD.navigate(b.dataset.searchView)});$$('[data-search-office]').forEach(b=>b.onclick=()=>{$('#searchDialog').close();SIGAD.viewOffice(b.dataset.searchOffice)});$('#searchAsk')?.addEventListener('click',()=>{$('#searchDialog').close();openAssistant();send(q)});}
 function openSearch(){$('#searchDialog').showModal();$('#globalSearch').value='';search();$('#globalSearch').focus()}
 function profile(){// La identidad la proporciona exclusivamente el perfil autenticado.

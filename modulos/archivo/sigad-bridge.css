@@ -44,3 +44,11 @@ img,svg,canvas{max-width:100%}
 }
 @media(max-width:390px){#main-content .card-body{padding:10px!important}#main-content .table-responsive>table{min-width:600px}}
 @media print{#main-content .table-responsive{overflow:visible!important}#main-content .table-responsive>table{min-width:0}#main-content .modal-content{max-height:none!important}}
+
+/* Un solo perfil visible: el de la interfaz principal de SIGAD */
+#view-perfil,#form-perfil-datos,#form-perfil-clave,#sidebar,#login-container,
+#user-profile,#perfil-usuario,.user-profile,.perfil-usuario,
+.navbar-user,.top-user,.user-badge,.user-info-display{display:none!important}
+/* Oculta exclusivamente el duplicado de nombre/rol y su avatar, no los títulos ni botones operativos */
+.navbar-top #user-display-name,.navbar-top #user-display-role{display:none!important}
+.navbar-top > .d-flex:last-child{display:none!important}

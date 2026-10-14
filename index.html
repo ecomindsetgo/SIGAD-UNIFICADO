@@ -189,8 +189,8 @@
     </section>
 
     <section class="view" id="view-auditoria">
-      <div class="view-toolbar"><div><h2>Auditoría</h2><p>Trazabilidad transversal de operaciones realizadas en SIGAD.</p></div><button class="secondary" id="btnExportAudit">Exportar CSV</button></div>
-      <article class="panel"><h3>Historial automático por paquete</h3><p>Ingrese el código visible del paquete (por ejemplo, 26-0150). SIGAD buscará las operaciones relacionadas en los registros existentes; no requiere IDs.</p><div class="int-actions"><input id="packageTimelineCode" placeholder="Código del paquete" style="max-width:320px"><button class="primary" id="packageTimelineSearch" type="button">Buscar historial</button></div><div id="packageTimelineResults" aria-live="polite"></div></article><article class="panel"><div class="filter-row"><input id="auditSearch" placeholder="Buscar acción o detalle"><select id="auditLimit"><option value="50">50 registros</option><option value="100">100 registros</option><option value="500">500 registros</option></select></div><div id="auditList"></div></article>
+      <div class="view-toolbar"><div><h2>Auditoría y trazabilidad</h2><p>Consulta de movimientos asociados a paquetes y actividad registrada. Algunas fuentes pueden ser parciales.</p></div><button class="secondary" id="btnExportAudit">Exportar CSV</button></div>
+      <article class="panel"><h3>Seguimiento documental por paquete</h3><p>Ingrese el código visible del paquete (por ejemplo, 26-0150). SIGAD busca coincidencias en registros accesibles, sin solicitar identificadores técnicos. Algunos movimientos por rangos pueden requerir revisión adicional.</p><div class="int-actions"><input id="packageTimelineCode" placeholder="Código del paquete" style="max-width:320px"><button class="primary" id="packageTimelineSearch" type="button">Buscar historial</button></div><div id="packageTimelineResults" aria-live="polite"></div></article><article class="panel"><div class="filter-row"><input id="auditSearch" placeholder="Buscar acción o detalle"><select id="auditLimit"><option value="50">50 registros</option><option value="100">100 registros</option><option value="500">500 registros</option></select></div><div id="auditList"></div></article>
     </section>
 
 
@@ -208,7 +208,7 @@
   <div class="assistant-heading"><span class="bot-emblem" data-icon="bot"></span><div><h2>Asistente SIGAD <span class="beta">BETA</span></h2><p>Consulta la información del Archivo</p></div><button id="closeAssistant" class="icon-control" aria-label="Minimizar asistente">−</button></div>
   <div id="assistantMessages" class="assistant-messages" role="log" aria-live="polite" aria-label="Conversación"></div>
   <form id="assistantForm" class="assistant-input"><label class="sr-only" for="assistantQuery">Consulta sobre el Archivo</label><input id="assistantQuery" placeholder="Escribe tu consulta sobre el Archivo..." maxlength="1000" autocomplete="off"><button id="btnAsk" class="primary" type="submit" aria-label="Enviar consulta" data-icon="send"></button></form>
-  <p class="assistant-disclaimer">Asistente local basado en los registros de SIGAD.<br>Verifica siempre el documento de origen.</p>
+  <p class="assistant-disclaimer">Asistente de consulta de SIGAD. Las respuestas dependen de los módulos autorizados.<br>Verifica siempre el documento de origen.</p>
 </aside>
 </div>
 <div id="assistantBackdrop" class="assistant-backdrop"></div>
