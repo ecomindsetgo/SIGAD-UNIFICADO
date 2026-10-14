@@ -1,0 +1,1 @@
+SIGAD v2.5: Mi cuenta separada de Configuración; perfil editable y guardado en usuarios/{uid}; bienvenida derivada únicamente del perfil autenticado; cambio de contraseña sin parpadeo para cuentas no pendientes; no se alteran colecciones históricas ni permisos. Validar contra reglas actuales y usuarios reales antes de producción.

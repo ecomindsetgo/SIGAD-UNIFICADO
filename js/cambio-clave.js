@@ -5,7 +5,7 @@ const auth=getAuth(),db=getFirestore();const el=id=>document.getElementById(id);
 const gate=el('sigad-password-gate'),form=el('sigad-password-form'),out=el('sigad-password-status');
 let checkSequence=0,required=false,ready=false,verifiedUID=null;
 function broadcast(){window.dispatchEvent(new CustomEvent('sigad:acceso-verificado',{detail:{uid:verifiedUID,ready,required}}));}
-function lock(){required=true;ready=false;verifiedUID=null;document.body.classList.add('sigad-password-required','sigad-password-checking');gate.hidden=false;broadcast();}
+function lock(show=false){required=show;ready=false;verifiedUID=null;document.body.classList.add('sigad-password-checking');document.body.classList.toggle('sigad-password-required',show);gate.hidden=!show;broadcast();}
 function unlock(uid){required=false;ready=true;verifiedUID=uid;document.body.classList.remove('sigad-password-required','sigad-password-checking');gate.hidden=true;broadcast();}
 window.SIGADPasswordGate={isRequired:()=>required,isReady:()=>ready,uid:()=>verifiedUID};
 // Each change of account invalidates the previous asynchronous profile check.
@@ -13,16 +13,16 @@ onAuthStateChanged(auth,async user=>{
  const n=++checkSequence;
  ready=false;verifiedUID=null;document.body.classList.add('sigad-password-checking');broadcast();
  if(!user){required=false;gate.hidden=true;document.body.classList.remove('sigad-password-required');el('sigad-password-identity').textContent='';broadcast();return;}
- lock();
+ lock(false);
  el('sigad-password-identity').textContent='Sesión actual: '+(user.email||'Cuenta sin correo')+' · UID: '+user.uid;
  out.textContent='Verificando el estado de esta cuenta…';
  try{
   const snap=await getDoc(doc(db,'usuarios',user.uid));
   if(n!==checkSequence||auth.currentUser?.uid!==user.uid)return;
-  if(!snap.exists()){out.textContent='No se encontró tu perfil de usuario. Comunícate con el administrador.';return;}
-  if(snap.data().cambioClavePendiente===true){out.textContent='Esta cuenta debe actualizar su contraseña. Si no eres tú, cierra sesión.';return;}
+  if(!snap.exists()){lock(true);out.textContent='No se encontró tu perfil de usuario. Comunícate con el administrador.';return;}
+  if(snap.data().cambioClavePendiente===true){lock(true);out.textContent='Esta cuenta debe actualizar su contraseña. Si no eres tú, cierra sesión.';return;}
   out.textContent='';unlock(user.uid);
- }catch(e){if(n===checkSequence)out.textContent='No se pudo verificar el perfil. Comprueba tu conexión e inténtalo nuevamente.';}
+ }catch(e){if(n===checkSequence){lock(true);out.textContent='No se pudo verificar el perfil. Comprueba tu conexión e inténtalo nuevamente.';}}
 });
 form.addEventListener('submit',async e=>{e.preventDefault();const user=auth.currentUser;if(!user)return;const a=form.elements.newPassword.value,b=form.elements.confirmPassword.value;if(a.length<8 || !/[A-ZÁÉÍÓÚÑ]/.test(a) || !/[a-záéíóúñ]/.test(a) || !/[^\p{L}\p{N}\s]/u.test(a)){out.textContent='La contraseña debe tener al menos 8 caracteres, una mayúscula, una minúscula y un carácter especial.';return;}if(a!==b){out.textContent='Las contraseñas no coinciden.';return;}const btn=form.querySelector('button[type=submit]');btn.disabled=true;out.textContent='Actualizando contraseña…';try{await updatePassword(user,a);await updateDoc(doc(db,'usuarios',user.uid),{cambioClavePendiente:false,cambioClaveActualizadaEn:serverTimestamp()});form.reset();out.textContent='Contraseña actualizada.';unlock(user.uid);}catch(err){out.textContent=err.code==='auth/requires-recent-login'?'Debes volver a iniciar sesión con la contraseña temporal antes de continuar.':'No se completó el cambio. La contraseña pudo actualizarse aunque no se guardara la confirmación. Contacta al administrador si persiste: '+(err.code||err.message);}finally{btn.disabled=false;}});
 el('sigad-password-logout').onclick=()=>signOut(auth);
@@ -42,6 +42,6 @@ helpForm.addEventListener('submit',async event=>{
   if(Date.now()-last<15*60*1000){helpStatus.textContent='Ya registraste una solicitud recientemente. Espera 15 minutos o comunícate con el administrador.';return;}
   await addDoc(collection(db,'solicitudes_recuperacion'),{correo:email,estado:'pendiente',origen:'portal_sigad',creadoEn:serverTimestamp()});
   localStorage.setItem(key,String(Date.now()));helpStatus.textContent='Solicitud recibida. Comunícate con el administrador por el canal institucional para verificar tu identidad. No se enviará una clave por esta pantalla.';helpForm.reset();helpForm.hidden=true;
- }catch(err){helpStatus.textContent='No se pudo registrar la solicitud ('+(err.code||'error de conexión')+'). Contacta al administrador por el canal habitual.';}
+ }catch(err){helpStatus.textContent=err.code==='permission-denied'?'La recepción de solicitudes todavía no está habilitada en el sistema. Comunícate con el administrador por el canal institucional.':'No se pudo registrar la solicitud ('+(err.code||'error de conexión')+'). Contacta al administrador por el canal habitual.';}
  finally{btn.disabled=false;}
 });

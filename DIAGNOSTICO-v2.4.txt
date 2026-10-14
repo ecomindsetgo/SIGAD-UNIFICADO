@@ -1,0 +1,8 @@
+SIGAD v2.4 - Corrección de mensajes de acceso
+
+1. La pantalla de acceso diferencia errores de credenciales, cuenta deshabilitada, exceso de intentos y conexión.
+2. La petición de recuperación identifica cuando Firestore no admite crear solicitudes.
+3. No se modificaron ni desplegaron reglas, usuarios ni datos.
+4. Para activar solicitudes_recuperacion no basta subir los archivos a GitHub: hay que publicar reglas específicas en Firestore, con mitigación contra abuso en formulario público. No reemplazar reglas en producción sin revisión.
+5. Verificar primero si la contraseña temporal realmente se cambió y corresponde a la cuenta con la que se inicia sesión.
+6. Usar ventana privada para descartar sesiones previas y evitar URL con email o password.

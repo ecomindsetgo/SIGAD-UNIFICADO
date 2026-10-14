@@ -1,6 +1,6 @@
 import {initializeApp,getApps} from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
 import {getAuth,signInWithEmailAndPassword,signOut,onAuthStateChanged} from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
-import {getFirestore,collection,getDocs,addDoc,doc,getDoc,runTransaction} from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-lite.js';
+import {getFirestore,collection,getDocs,addDoc,doc,getDoc,updateDoc,runTransaction} from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-lite.js';
 
 // Compatible con la base Firestore que ya contiene los registros originales.
 // Las reglas de seguridad deben restringir todas las operaciones por rol.
@@ -79,16 +79,29 @@ async function save(event,type){event.preventDefault();const f=event.currentTarg
 const gate=$('sigad-auth-gate');
 const loginForm=$('sigad-login-form');
 const feedback=$('sigad-login-feedback');
-loginForm.addEventListener('submit',async e=>{e.preventDefault();const button=loginForm.querySelector('button');button.disabled=true;feedback.textContent='Verificando credenciales…';try{await signInWithEmailAndPassword(auth,loginForm.elements.email.value.trim(),loginForm.elements.password.value);loginForm.reset();}catch(error){feedback.textContent='No se pudo iniciar sesión. Verifique su cuenta, contraseña y autorización.';}finally{button.disabled=false;}});
+loginForm.addEventListener('submit',async e=>{e.preventDefault();const button=loginForm.querySelector('button');button.disabled=true;feedback.textContent='Verificando credenciales…';try{await signInWithEmailAndPassword(auth,loginForm.elements.email.value.trim(),loginForm.elements.password.value);loginForm.reset();}catch(error){const code=error?.code||'error-desconocido';const messages={'auth/invalid-credential':'Correo o contraseña incorrectos. Verifica los datos y vuelve a intentarlo.','auth/wrong-password':'Correo o contraseña incorrectos.','auth/invalid-email':'El correo ingresado no tiene un formato válido.','auth/user-disabled':'Esta cuenta está deshabilitada. Contacta al administrador.','auth/too-many-requests':'Demasiados intentos. Espera antes de volver a intentar.','auth/network-request-failed':'No se pudo conectar. Comprueba tu internet e inténtalo nuevamente.','auth/operation-not-allowed':'El método de inicio de sesión no está habilitado. Contacta al administrador.'};feedback.textContent=(messages[code]||'No se pudo iniciar sesión. Comunica al administrador el código: '+code);console.warn('SIGAD: fallo al autenticar',code);}finally{button.disabled=false;}});
 $('sigad-global-logout').addEventListener('click',()=>signOut(auth));
 onAuthStateChanged(auth,user=>{document.body.classList.toggle('sigad-locked',!user);gate.hidden=!!user;if(user){verifiedName='';window.dispatchEvent(new Event('sigad:sesion-activa'));document.querySelectorAll('.profile-name').forEach(el=>el.textContent=user.displayName||user.email||'Usuario SIGAD');feedback.textContent='';const p=document.getElementById('profileName');if(p)p.value=user.displayName||user.email||'';}else{verifiedName='';document.getElementById('profileName').value='';records.clear();feedback.textContent='Inicie sesión para continuar.';}for(const id of Object.keys(modules)){const slot=rootFor(id);if(slot&&slot.closest('.view.active')){render(id);break}}});
 window.addEventListener('sigad:acceso-verificado',async e=>{
- const uid=e.detail?.uid;if(!e.detail?.ready||!uid){verifiedName='';document.querySelectorAll('.profile-name').forEach(x=>x.textContent='Usuario SIGAD');return;}
+ const uid=e.detail?.uid;if(!e.detail?.ready||!uid){verifiedName='';document.querySelectorAll('.profile-name').forEach(x=>x.textContent='Usuario SIGAD');const welcome=document.getElementById('welcomeName');if(welcome)welcome.textContent='Usuario';return;}
  try{const snap=await getDoc(doc(db,'usuarios',uid));if(auth.currentUser?.uid!==uid||!window.SIGADPasswordGate?.isReady())return;
  const data=snap.data()||{};verifiedName=String(data.nombre||data.nombreCompleto||auth.currentUser.email||'Usuario SIGAD');
  document.querySelectorAll('.profile-name').forEach(x=>x.textContent=verifiedName);
- const field=document.getElementById('profileName');if(field)field.value=verifiedName;
+ const field=document.getElementById('profileName');if(field)field.value=verifiedName;const emailField=document.getElementById('profileEmail');if(emailField)emailField.value=auth.currentUser.email||'';const welcome=document.getElementById('welcomeName');if(welcome)welcome.textContent=verifiedName.trim().split(/\s+/)[0];
  }catch(err){console.warn('No se pudo cargar identidad de perfil',err);}
+});
+const profileForm=document.getElementById('profileForm');
+profileForm.addEventListener('submit',async event=>{
+ event.preventDefault();const user=auth.currentUser,statusEl=document.getElementById('profileStatus');
+ if(!user||!window.SIGADPasswordGate?.isReady()||window.SIGADPasswordGate.uid()!==user.uid){statusEl.textContent='Verifica tu sesión antes de guardar.';return;}
+ const nombre=document.getElementById('profileName').value.trim().replace(/\s+/g,' ');
+ if(nombre.length<3||nombre.length>80){statusEl.textContent='Ingresa un nombre válido de 3 a 80 caracteres.';return;}
+ const button=document.getElementById('profileSave');button.disabled=true;statusEl.textContent='Guardando…';
+ try{await updateDoc(doc(db,'usuarios',user.uid),{nombre});verifiedName=nombre;
+ document.querySelectorAll('.profile-name').forEach(x=>x.textContent=nombre);
+ document.getElementById('welcomeName').textContent=nombre.split(/\s+/)[0];statusEl.textContent='Nombre actualizado correctamente.';
+ }catch(err){statusEl.textContent='No se pudo guardar el nombre ('+(err.code||'error')+'). Comprueba los permisos del perfil.';}
+ finally{button.disabled=false;}
 });
 window.addEventListener('sigad:modulo',e=>{ if(!window.SIGADLegacyModuleViews?.includes(e.detail)) render(e.detail); });
 window.SIGADOperaciones={getStatus:()=>({autenticado:!!auth.currentUser,usuario:username()})};

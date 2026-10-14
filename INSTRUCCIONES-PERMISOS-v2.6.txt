@@ -1,0 +1,12 @@
+SIGAD v2.6 - PERMISOS
+
+1. NO colocar reglas nuevas sin copia previa de las reglas actuales.
+2. Sustituir archivos de GitHub por esta version.
+3. Comparar firestore.rules con reglas publicadas en Firebase Console > Firestore Database > Reglas. El ZIP NO publica las reglas por si solo.
+4. Antes de publicar reglas, probar con Firebase Rules Playground o emulator en un entorno adecuado los casos de lectura, creacion, edicion y eliminacion para distintas cuentas.
+5. Guardar permisos desde Administracion. El panel verifica lectura posterior; si da permission-denied, la regla publicada no autoriza ese cambio.
+6. Cerrar sesión del usuario y volver a entrar. El modulo antiguo ahora consulta permisos personalizados del documento usuarios/{UID}.
+7. Prueba de rechazo: deshabilitar crear reingresos para una cuenta NO administradora, comprobar controles deshabilitados y que Firestore rechaza la escritura, no solo oculta el botón.
+8. IMPORTANTE: No activar en produccion sin confirmar reglas. Los controles del navegador no equivalen a seguridad de servidor.
+9. Los usuarios con rol Administrador pueden tener permisos heredados de eliminacion, y la cuenta del Administrador General conserva acceso total.
+10. Si se siguen usando pantallas de operacion alternativas, comprobar sus controles especificamente.

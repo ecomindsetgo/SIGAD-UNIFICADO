@@ -77,6 +77,40 @@
             return u === "ROBERTO DÁVILA" || u === "ROBERTO DAVILA" || u === "RDAVILA" || u === "JORGE DESPOSORIO" || u === "JDESPOSORIO" || esUsuarioAdministradorLog(u);
         }
 
+        // Los permisos administrados en SIGAD prevalecen sobre las listas heredadas.
+        let permisosCuentaActual = null;
+        let uidPermisosCargados = null;
+        async function cargarPermisosCuenta(user) {
+            permisosCuentaActual = null;
+            uidPermisosCargados = null;
+            if (!user) return;
+            try {
+                const snapshot = await getDoc(doc(db, 'usuarios', user.uid));
+                if (auth.currentUser?.uid !== user.uid) return;
+                if (!snapshot.exists()) throw new Error('Perfil no encontrado');
+                const data = snapshot.data();
+                if (data.permisos && typeof data.permisos === 'object') {
+                    permisosCuentaActual = data.permisos;
+                }
+                uidPermisosCargados = user.uid;
+                aplicarPermisos(data.nombre || user.displayName || user.email.split('@')[0]);
+            } catch (error) {
+                console.warn('No fue posible verificar los permisos del perfil', error);
+                // Ante un error de consulta, deshabilitar escritura en la interfaz.
+                permisosCuentaActual = Object.fromEntries(['inventario','reingresos','traslados','microformas','tarjetas'].map(m=>[m,{}]));
+                uidPermisosCargados = user.uid;
+                aplicarPermisos(user.displayName || user.email.split('@')[0]);
+            }
+        }
+        function permisoActual(modulo, accion, legado) {
+            if (auth.currentUser?.uid === 'MmniSKpNWPN2saVja2wVTPaiBnn2') return true;
+            if (uidPermisosCargados !== auth.currentUser?.uid) return false;
+            if (permisosCuentaActual) return permisosCuentaActual?.[modulo]?.[accion] === true;
+            return legado;
+        }
+        function bloquearControles(selector, habilitado) {
+            document.querySelectorAll(selector).forEach(el => {el.disabled = !habilitado;});
+        }
         function aplicarPermisos(nombreUsuario) {
             const usuarioLimpio = normalizarTexto(nombreUsuario);
             
@@ -84,10 +118,10 @@
             const inventarioLimpios = PERMISOS.inventario_escritura.map(n => normalizarTexto(n));
             const microformasLimpios = PERMISOS.microformas_escritura.map(n => normalizarTexto(n));
 
-            const puedeReingresos = reingresosLimpios.includes(usuarioLimpio);
-            const puedeInventario = inventarioLimpios.includes(usuarioLimpio);
-            const puedeMicroformasEscritura = microformasLimpios.includes(usuarioLimpio);
-            const puedeVerMicroformas = esUsuarioMicroformasVisualizador(usuarioLimpio);
+            const puedeReingresos = permisoActual('reingresos','crear',reingresosLimpios.includes(usuarioLimpio));
+            const puedeInventario = permisoActual('inventario','crear',inventarioLimpios.includes(usuarioLimpio));
+            const puedeMicroformasEscritura = permisoActual('microformas','crear',microformasLimpios.includes(usuarioLimpio));
+            const puedeVerMicroformas = permisoActual('microformas','leer',true);
             const esAdminLog = esUsuarioAdministradorLog(usuarioLimpio);
 
             const menuMicroformas = document.getElementById('menu-link-microformas');
@@ -132,23 +166,25 @@
 
             document.querySelectorAll('#view-reingresos input, #view-reingresos select').forEach(el => el.disabled = !puedeReingresos);
 
-            document.getElementById('btn-guardar-traslado')?.removeAttribute('disabled');
+            const puedeTraslados = permisoActual('traslados','crear',reingresosLimpios.includes(usuarioLimpio));
+            document.getElementById('btn-guardar-traslado')?.toggleAttribute('disabled', !puedeTraslados);
             
             const btnAgregarTraslado = document.querySelector('button[onclick="agregarFilaTraslado()"]');
             if (btnAgregarTraslado) {
-                btnAgregarTraslado.disabled = false;
-                btnAgregarTraslado.style.pointerEvents = 'auto';
-                btnAgregarTraslado.classList.remove('opacity-50');
+                btnAgregarTraslado.disabled = !puedeTraslados;
+                btnAgregarTraslado.style.pointerEvents = puedeTraslados ? 'auto' : 'none';
+                btnAgregarTraslado.classList.toggle('opacity-50', !puedeTraslados);
             }
 
             const btnGenerarPDFTraslado = document.querySelector('button[onclick="generarReporteTrasladoPDF()"]');
             if (btnGenerarPDFTraslado) {
-                btnGenerarPDFTraslado.disabled = false;
-                btnGenerarPDFTraslado.style.pointerEvents = 'auto';
-                btnGenerarPDFTraslado.classList.remove('opacity-50');
+                btnGenerarPDFTraslado.disabled = !puedeTraslados;
+                btnGenerarPDFTraslado.style.pointerEvents = puedeTraslados ? 'auto' : 'none';
+                btnGenerarPDFTraslado.classList.toggle('opacity-50', !puedeTraslados);
             }
 
-            document.querySelectorAll('#view-traslados input, #view-traslados select').forEach(el => el.disabled = false);
+            document.querySelectorAll('#view-traslados input, #view-traslados select').forEach(el => el.disabled = !puedeTraslados);
+            bloquearControles('#btn-guardar-microforma, #view-microformas button[onclick*=\"editar\"], #view-microformas button[onclick*=\"eliminar\"]', puedeMicroformasEscritura);
 
             document.getElementById('form-inventario')?.querySelectorAll('input, select, button[type=submit]').forEach(el => el.disabled = !puedeInventario);
 
@@ -605,6 +641,7 @@
 
                 cargarDataMaestra(userTitle);
                 aplicarPermisos(userTitle);
+                cargarPermisosCuenta(user);
                 inicializarSelectsReingresos();
                 inicializarSelectsTraslados(userTitle);
                 resetFormularioReingreso();
@@ -613,7 +650,7 @@
                 // Las operaciones de auditoría no deben bloquear la finalización
                 // del callback de autenticación ni la carga del documento.
                 setTimeout(() => {
-                    sincronizarUsuarioEnFirestore(user, userTitle).catch(err => console.error(err));
+                    // Se evita reescribir rol o nombre cuando se inicia sesión.
                     registrarInicioSesionEnCloud(user, userTitle).catch(err => console.error(err));
                 }, 0);
 
