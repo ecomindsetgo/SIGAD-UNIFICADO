@@ -16,14 +16,14 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="assets/app.css">
-  <link rel="stylesheet" href="assets/dashboard.css">
+  <link rel="stylesheet" href="assets/dashboard.css"><link rel="stylesheet" href="assets/operaciones-modern.css">
   <script defer src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script defer src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.29/jspdf.plugin.autotable.min.js"></script>
   <script defer src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
   <script defer src="js/vendor-jszip.min.js"></script>
   <script defer src="js/archive360.js"></script>
   <script defer src="js/app.js"></script>
-  <script defer src="js/dashboard.js"></script>
+  <script defer src="js/dashboard.js"></script><script defer src="js/institutional-dashboard.js"></script>
   <script type="module" src="js/operaciones.js"></script>
 </head>
 <body><svg xmlns="http://www.w3.org/2000/svg" style="position:absolute;width:0;height:0;overflow:hidden" aria-hidden="true"><defs><filter id="logo-alpha" color-interpolation-filters="sRGB"><feColorMatrix in="SourceGraphic" type="luminanceToAlpha" result="light"/><feComponentTransfer in="light" result="mask"><feFuncA type="table" tableValues="1 0"/></feComponentTransfer><feComposite in="SourceGraphic" in2="mask" operator="in"/></filter></defs></svg>
@@ -59,10 +59,10 @@
     </header>
     <section class="view active" id="view-dashboard">
       <div class="dashboard-heading"><div><h2>Bienvenido, <span id="welcomeName">Alfredo</span></h2><p>Resumen general de la gestión del Archivo Desconcentrado</p></div><label class="period-control">Periodo<select id="dashboardYear" aria-label="Periodo del dashboard"></select></label></div>
-      <div class="stats" id="stats"></div>
+      <div class="stats" id="stats"></div><div id="institutionalDashboard" class="institutional-dashboard" aria-live="polite"></div>
       <div class="dashboard-grid">
-        <article class="panel activity-panel"><div class="panel-head"><h3>Actividad mensual</h3><select id="chartMetric" aria-label="Métrica del gráfico"><option value="packages">Paquetes</option><option value="records">Registros</option></select></div><div id="monthlyChart"></div><div class="chart-legend"><span style="--series:#a70038">Devoluciones</span><span style="--series:#0984d7">Transferencias</span><span style="--series:#1daa57">Eliminaciones</span></div><p class="data-caption">Solo oficios generados y procesos concluidos en el periodo.</p></article>
-        <article class="panel repository-panel"><div class="panel-head"><h3>Distribución por repositorio</h3></div><div id="repositoryChart"></div><p class="data-caption">Cobertura de rangos configurados y plano Dunas. No es inventario físico; no depende del periodo.</p></article>
+        <article class="panel activity-panel"><div class="panel-head"><h3>Actividad mensual</h3><select id="chartMetric" aria-label="Métrica del gráfico"><option value="packages">Paquetes</option><option value="records">Registros</option></select></div><div id="monthlyChart"></div><div class="chart-legend"><span style="--series:#a70038">Devoluciones</span><span style="--series:#0984d7">Transferencias</span><span style="--series:#1daa57">Eliminaciones</span></div><p class="data-caption">Datos de gestión registrados en el periodo.</p></article>
+        <article class="panel repository-panel"><div class="panel-head"><h3>Distribución por repositorio</h3></div><div id="repositoryChart"></div><p class="data-caption">Datos de los inventarios registrados, cuando estén disponibles.</p></article>
         <article class="panel modules-panel"><div class="panel-head"><h3>Acceso rápido a módulos</h3></div><div class="module-grid" id="moduleGrid"></div></article>
         <article class="panel recent-panel"><div class="panel-head"><h3>Actividad reciente</h3><button class="text-button" data-go="auditoria">Ver todo</button></div><div id="recentActivity" class="timeline"></div></article>
         <article class="panel observations-panel"><div class="panel-head"><h3>Indicadores de observaciones <small>(devolución de cargos)</small></h3></div><div class="observations-layout"><div id="observationGauge"></div><div><h4>Principales causas</h4><div id="obsRanking" class="bars"></div></div></div></article>
