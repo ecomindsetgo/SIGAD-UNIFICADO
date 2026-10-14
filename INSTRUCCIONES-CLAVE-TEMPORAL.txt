@@ -1,0 +1,16 @@
+SIGAD v2.0 — CAMBIO DE CLAVE TEMPORAL / SPARK
+
+1) Antes de subir: hacer copia de reglas y archivos. No borrar ni recrear cuentas.
+2) Publicar los archivos de SIGAD v2.0 por GitHub Pages.
+3) Revisar manualmente diferencias entre firestore.rules y las reglas vigentes. Probar con dos cuentas autorizadas. NO publicar reglas automáticamente.
+4) En Cloud Shell autenticado como propietario, subir mediante menú de Cloud Shell el archivo herramientas/recuperar_cloud_shell.py a la carpeta home y ejecutar: python3 recuperar_cloud_shell.py
+5) Introducir el correo, confirmar identidad de forma externa, comprobar UID y escribir RESTABLECER.
+6) El script fija cambioClavePendiente=true en el perfil EXISTENTE, actualiza la contraseña SIN CAMBIAR UID e imprime una temporal aleatoria. No la guardes en archivos ni la publiques.
+7) El trabajador accede con la temporal y establece una nueva contraseña personal en SIGAD. La interfaz registra cambioClavePendiente=false después del éxito.
+8) Para correo personal funcional se añadió '¿Olvidaste tu contraseña?' en la pantalla de acceso.
+
+IMPORTANTE — LÍMITE DE SEGURIDAD DE SPARK + GITHUB PAGES
+El bloqueo de navegación de cambio de contraseña es una protección DE INTERFAZ, NO una imposición infalsificable desde el servidor. Las reglas de la versión permiten al titular confirmar el cambio de la marca; un usuario técnico podría realizar esa confirmación sin cambiar la contraseña. Para exigirlo criptográficamente en todos los accesos y evitar bypass se necesita un servidor confiable/verificación administrativa adicional.
+NO activar en producción sin revisar reglas y probar. El restablecimiento excepcional en Cloud Shell usa IAM de Google Cloud y no es una funcionalidad de GitHub Pages.
+
+MEDIDAS: identidades verificadas antes del reset; nunca reutilizar temporal; no registrar contraseña en notas; cerrar Cloud Shell y limpiar scroll; no subir credenciales, tokens o capturas con contraseñas.

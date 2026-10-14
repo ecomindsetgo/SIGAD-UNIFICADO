@@ -22,10 +22,18 @@ service cloud.firestore {
      && !(request.resource.data.nombre in ['ALFREDO CRUZADO','ACRUZADO','ROBERTO DAVILA','RDAVILA','JORGE IZQUIERDO','JIZQUIERDO','MANUEL BARANDIARAN','MBARANDIARAN','TEOFILO GABINO','TGABINO'])
      && !('permisos' in request.resource.data);
    // Solo el propietario de la cuenta general puede modificar autorizaciones.
-   allow update: if root() && uid != request.auth.uid
+   allow update: if (
+     root() && uid != request.auth.uid
      && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['permisos','permisosActualizadosPor','permisosActualizadosEn'])
      && request.resource.data.permisosActualizadosPor == request.auth.uid
-     && request.resource.data.permisosActualizadosEn == request.time;
+     && request.resource.data.permisosActualizadosEn == request.time
+   ) || (
+     signed() && uid == request.auth.uid
+     && resource.data.get('cambioClavePendiente',false) == true
+     && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['cambioClavePendiente','cambioClaveActualizadaEn'])
+     && request.resource.data.cambioClavePendiente == false
+     && request.resource.data.cambioClaveActualizadaEn == request.time
+   );
    allow delete: if false;
   }
   match /auditoria_logins/{id}{allow create:if signed();allow read:if signed();allow update,delete:if false;}
