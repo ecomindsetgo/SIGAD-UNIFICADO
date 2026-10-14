@@ -1,0 +1,8 @@
+SIGAD UNIFICADO v1.4 — REVISIÓN DE FORMULARIOS
+- Inventario: registro por matriz de rangos y subrangos faltantes con cálculo automático del total teórico, faltantes y real. Validaciones de prefijo, rango, superposición de faltantes. Se guarda en censo_institucional con la estructura matrizRangos.
+- Reingresos/traslados: se mantienen los registros de múltiples filas y sus campos de operación.
+- Tarjetas: parámetros generales, detalle múltiple y función agregar rangos correlativos y 5 filas.
+- Microformas: formulario de bloque por subrangos y conteo automático de paquetes.
+- Dashboard: se ocultaron los dos gráficos heredados duplicados sin suprimir sus elementos; continúa el tablero general unificado.
+- Se mejora contraste del buscador en tema oscuro y las vistas móviles.
+VALIDACIONES: sintaxis JS y estructura ZIP. No se verificó funcionamiento con usuarios, permisos y datos reales ni se han recuperado aún los PDF institucionales originales, los flujos de edición y eliminación, ni todos los filtros originales. No usar con datos productivos sin validación previa.
