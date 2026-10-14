@@ -18,7 +18,7 @@ INICIO
 FUNCIONES NUEVAS
 - Dashboard: periodo por año, actividad mensual por paquetes o registros,
   cobertura de repositorios, observaciones y actividad reciente.
-- Accesos a los módulos existentes y a SAAMIR/SAMICERT.
+- Accesos a los módulos existentes y a módulo documental original/SAMICERT.
 - Búsqueda global con Ctrl+K (Cmd+K en Mac): módulos y oficios por número,
   destinatario o dependencia; consultas de paquetes mediante el asistente.
 - Asistente lateral con consultas por número de oficio, ficha completa,
@@ -54,7 +54,7 @@ ALCANCE REAL
 Esta entrega mantiene el almacenamiento local del proyecto original.
 El asistente es un motor local de consultas: no utiliza un modelo generativo
 ni tiene acceso a datos que no estén registrados en este navegador.
-SAAMIR/SAMICERT son enlaces externos; sus cifras no se inventan ni se
+módulo documental original/SAMICERT son enlaces externos; sus cifras no se inventan ni se
 sincronizan. Firebase incluye solo configuración de ejemplo y reglas,
 sin conexión multiusuario activada. El perfil visual no autentica usuarios.
 Excel/PDF usan los componentes CDN del proyecto original y requieren
@@ -79,5 +79,5 @@ exclusión de procesos pendientes en totales concluidos, búsqueda global,
 apertura del documento, ubicación de paquetes, generación de un oficio
 y navegación móvil de todos los módulos. Sin errores JavaScript en esas
 pruebas. Las pruebas utilizaron datos aislados que NO se incluyen en el ZIP.
-No se verificó una conexión real a Firebase, SAAMIR o SAMICERT; no existe
+No se verificó una conexión real a Firebase, módulo documental original o SAMICERT; no existe
 una integración de datos activa con esas plataformas en esta versión.

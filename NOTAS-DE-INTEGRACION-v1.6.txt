@@ -1,0 +1,13 @@
+SIGAD v1.6: identidad institucional unificada en pantalla.
+
+Cuentas: el inicio de sesión de SIGAD y el motor operativo utilizan el mismo proveedor y el mismo proyecto existente. Las cuentas, contraseñas y registros existentes no se migraron, editaron ni sobrescribieron.
+
+Datos operativos: se utilizan las colecciones institucionales originales de inventarios, reingresos, traslados, tarjetas y microformas. No es necesario cargar esos registros nuevamente. Su lectura depende de los permisos existentes.
+
+Datos de los módulos SIGAD: algunos módulos originales todavía persisten en almacenamiento local del navegador. No están migrados a almacenamiento central.
+
+Arquitectura: las vistas documentales originales aún funcionan en un marco interno del mismo origen. Una reescritura completa y segura, sin ese marco, no está realizada.
+
+Seguridad: la presencia de un menú protegido no garantiza aislamiento de datos. Revisar reglas y roles con un administrador autorizado. Pruebas de acceso, lectura, escritura, reportes y cierre de sesión pendientes en ambiente autorizado.
+
+No cambiar nombres de colecciones ni identificadores internos, porque ello desvincularía la información existente. No se realizan modificaciones a los registros reales desde la entrega del ZIP.

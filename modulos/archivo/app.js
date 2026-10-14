@@ -531,7 +531,7 @@
                     renderTablaMicroformas();
                 }
                 cargarMicroformasDesdeCloud().catch(err => {
-                    console.error('SAAMIR: error al cargar Microformas al abrir el módulo:', err);
+                    console.error('SIGAD: error al cargar Microformas al abrir el módulo:', err);
                 });
             }
             
@@ -540,19 +540,19 @@
             abrirGrupoDeVista(viewId);
 
             if (viewId === 'view-consultas') {
-                cargarInventariosDesdeCloud().catch(err => console.error('SAAMIR: error al cargar inventario:', err));
+                cargarInventariosDesdeCloud().catch(err => console.error('SIGAD: error al cargar inventario:', err));
             }
 
             if (viewId === 'view-consultas-reingresos') {
-                cargarHistorialReingresos().catch?.(err => console.error('SAAMIR: error al cargar reingresos:', err));
+                cargarHistorialReingresos().catch?.(err => console.error('SIGAD: error al cargar reingresos:', err));
             }
 
             if (viewId === 'view-consultas-traslados') {
-                cargarHistorialTraslados().catch?.(err => console.error('SAAMIR: error al cargar traslados:', err));
+                cargarHistorialTraslados().catch?.(err => console.error('SIGAD: error al cargar traslados:', err));
             }
 
             if (viewId === 'view-consultas-tarjetas') {
-                cargarHistorialTarjetas().catch?.(err => console.error('SAAMIR: error al cargar tarjetas:', err));
+                cargarHistorialTarjetas().catch?.(err => console.error('SIGAD: error al cargar tarjetas:', err));
             }
         }
 
@@ -617,7 +617,7 @@
                     registrarInicioSesionEnCloud(user, userTitle).catch(err => console.error(err));
                 }, 0);
 
-                // SAAMIR queda disponible inmediatamente. Solo se preparan en segundo
+                // SIGAD queda disponible inmediatamente. Solo se preparan en segundo
                 // plano los datos que alimentan el Dashboard; los módulos operativos
                 // cargan sus propios datos cuando el usuario entra a ellos.
                 setTimeout(() => {
@@ -627,7 +627,7 @@
                         cargarMicroformasDesdeCloud()
                     ]).then(resultados => {
                         const errores = resultados.filter(r => r.status === 'rejected');
-                        if (errores.length) console.warn('SAAMIR: algunos datos del dashboard no pudieron cargarse:', errores);
+                        if (errores.length) console.warn('SIGAD: algunos datos del dashboard no pudieron cargarse:', errores);
                     });
                 }, 50);
             } else {
@@ -1773,11 +1773,11 @@
             if (!contenido) return;
 
             const ventana = window.open('', '', 'height=700,width=900');
-            ventana.document.write('<html><head><title>Reporte de Auditoría - SAAMIR</title>');
+            ventana.document.write('<html><head><title>Reporte de Auditoría - SIGAD</title>');
             ventana.document.write('<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">');
             ventana.document.write('<style>body { padding: 20px; font-family: Inter, sans-serif; }</style>');
             ventana.document.write('</head><body>');
-            ventana.document.write('<h4 class="mb-3">Reporte General de Trazabilidad y Auditoría - SAAMIR</h4>');
+            ventana.document.write('<h4 class="mb-3">Reporte General de Trazabilidad y Auditoría - SIGAD</h4>');
             ventana.document.write(contenido.outerHTML);
             ventana.document.write('</body></html>');
             ventana.document.close();
@@ -1806,7 +1806,7 @@
             const modalEl = document.getElementById('modal-pdf-preview');
 
             if (!iframe || !btnDescargar || !modalEl) {
-                console.error('SAAMIR: no se encontró la interfaz de vista previa PDF.');
+                console.error('SIGAD: no se encontró la interfaz de vista previa PDF.');
                 return;
             }
 
@@ -1851,7 +1851,7 @@
             doc.text("ARCHIVO DESCONCENTRADO DE LA CSJSA", pageWidth / 2, 21, { align: "center" });
 
             doc.setFont("Inter", "bold"); doc.setFontSize(11); doc.setTextColor(128, 0, 0); 
-            doc.text("SAAMIR - Sistema de Administración de Archivos, Microformas, Inventario y Reportes", pageWidth / 2, 27, { align: "center" });
+            doc.text("SIGAD - Sistema Integral de Gestión del Archivo Desconcentrado", pageWidth / 2, 27, { align: "center" });
             doc.setLineWidth(0.4); doc.setDrawColor(128, 0, 0); doc.line(15, 31, pageWidth - 15, 31);
             
             doc.setFontSize(11); doc.setTextColor(0, 0, 0);
@@ -2463,7 +2463,7 @@
             doc.text("REPORTE DE EXPEDIENTES REINGRESADOS", pageWidth / 2, 16, { align: "center" });
 
             doc.setFont("Inter", "bold"); doc.setTextColor(128, 0, 0); doc.setFontSize(9.5);
-            doc.text("SAAMIR - Sistema de Administración de Archivos, Microformas, Inventario y Reportes", pageWidth / 2, 22, { align: "center" });
+            doc.text("SIGAD - Sistema Integral de Gestión del Archivo Desconcentrado", pageWidth / 2, 22, { align: "center" });
 
             doc.setDrawColor(128, 0, 0); doc.setLineWidth(0.4);
             doc.line(15, 27, pageWidth - 15, 27);
@@ -2546,7 +2546,7 @@
             doc.text("FORMATO DE TRASLADO DE PAQUETES", pageWidth / 2, 16, { align: "center" });
 
             doc.setFont("Inter", "bold"); doc.setTextColor(128, 0, 0); doc.setFontSize(9.5);
-            doc.text("SAAMIR - Sistema de Administración de Archivos, Microformas, Inventario y Reportes", pageWidth / 2, 22, { align: "center" });
+            doc.text("SIGAD - Sistema Integral de Gestión del Archivo Desconcentrado", pageWidth / 2, 22, { align: "center" });
 
             doc.setDrawColor(128, 0, 0); doc.setLineWidth(0.4);
             doc.line(15, 27, pageWidth - 15, 27);
@@ -2850,7 +2850,7 @@
             doc.text("Archivo Desconcentrado - Dashboard Global Institucional", pageWidth / 2, 21, { align: "center" });
 
             doc.setFont("Inter", "bold"); doc.setFontSize(11); doc.setTextColor(128, 0, 0); 
-            doc.text("SAAMIR - REPORTE EJECUTIVO GLOBAL", pageWidth / 2, 27, { align: "center" });
+            doc.text("SIGAD - REPORTE EJECUTIVO GLOBAL", pageWidth / 2, 27, { align: "center" });
             doc.setLineWidth(0.4); doc.setDrawColor(128, 0, 0); doc.line(15, 31, pageWidth - 15, 31);
 
             let sT = document.getElementById('dash-total-teorico').innerText;
@@ -3247,7 +3247,7 @@
                 if (!blobUrl) throw new Error('No se pudo generar la vista previa del PDF.');
                 mostrarModalPreviewPDF(blobUrl, `TARJETAS_${lote.juzgado || 'LOTE'}.pdf`);
             } catch (error) {
-                console.error('SAAMIR: error al abrir PDF de tarjeta:', error);
+                console.error('SIGAD: error al abrir PDF de tarjeta:', error);
                 Swal.fire('Error', `No se pudo abrir el PDF: ${error.message || error}`, 'error');
             }
         }

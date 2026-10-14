@@ -1,6 +1,6 @@
 SIGAD UNIFICADO v1.1 - ACCESO ÚNICO Y MENÚ AGRUPADO
 
-- Inicio de sesión único para SIGAD mediante Firebase Authentication del proyecto usado por SAAMIR.
+- Inicio de sesión único para SIGAD mediante Firebase Authentication del proyecto usado por módulo documental original.
 - Se eliminaron el formulario de login y el botón de cierre de sesión de las pantallas de operaciones.
 - Botón general «Cerrar sesión» en el menú principal.
 - Operaciones agrupadas en: Gestión de paquetes, Tarjetas de paquetes, Gestión documental y Administración.

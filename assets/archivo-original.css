@@ -1,1 +1,5 @@
 .archive-host{width:100%;min-width:0}.archive-frame{width:100%;height:calc(100vh - 150px);min-height:690px;border:0;border-radius:14px;background:transparent;display:block}@media(max-width:720px){.archive-frame{height:calc(100vh - 115px);min-height:650px;border-radius:6px}}
+/* Mobile modules occupy the host content width; no nested horizontal page scroll */
+.archive-host{overflow:visible;max-width:100%}.archive-frame{min-width:0;max-width:100%;display:block}
+@media(max-width:760px){.archive-host{width:100%}.archive-frame{width:100%;height:calc(100dvh - 120px);min-height:480px;border-radius:8px}.view:has(.archive-host){padding:7px!important}}
+@media(max-width:420px){.archive-frame{height:calc(100dvh - 100px);min-height:460px}}

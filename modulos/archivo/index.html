@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SAAMIR - Sistema de Administración de Archivos, Microformas, Inventario y Reportes</title>
+    <title>SIGAD - Sistema de Administración de Archivos, Microformas, Inventario y Reportes</title>
     <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath fill='%230d6efd' d='M9.828 3h3.982a2 2 0 0 1 1.992 2.181l-.637 7A2 2 0 0 1 13.174 14H2.825a2 2 0 0 1-1.991-1.819l-.637-7a1.99 1.99 0 0 1 .342-1.31L.5 3a2 2 0 0 1 2-2h3.672a2 2 0 0 1 1.414.586l.828.828A2 2 0 0 0 9.828 3z'/%3E%3C/svg%3E">
     <!-- Bootstrap 5.3 CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -24,7 +24,7 @@
         <div class="login-card">
             <div class="text-center mb-4">
                 <i class="bi bi-folder-fill text-primary" style="font-size: 3.5rem;"></i>
-                <h1 class="fw-bold mt-2 text-dark" style="letter-spacing: -1.5px;">SAAMIR</h1>
+                <h1 class="fw-bold mt-2 text-dark" style="letter-spacing: -1.5px;">SIGAD</h1>
                 <p class="text-muted small fw-medium mb-1">Sistema de Administración de Archivos, Microformas, Inventario y Reportes</p>
                 <p class="small fw-bold text-uppercase" style="color: var(--sipa-primary); font-size: 0.75rem;">Corte Superior de Justicia del Santa</p>
             </div>
@@ -54,7 +54,7 @@
         <aside id="sidebar" class="no-print">
             <div class="p-3 text-center border-bottom border-secondary border-opacity-25">
                 <div class="brand-mark"><i class="bi bi-archive-fill"></i></div>
-                <div class="brand-name">SAAMIR</div>
+                <div class="brand-name">SIGAD</div>
                 <div class="brand-subtitle">Archivo Desconcentrado</div>
                 <div class="brand-version">Gestión documental</div>
             </div>
@@ -144,7 +144,7 @@
                         <i class="bi bi-list fs-5"></i>
                     </button>
                     <div class="top-title-wrap">
-                        <span class="top-title-kicker">SAAMIR</span>
+                        <span class="top-title-kicker">SIGAD</span>
                         <h5 class="m-0 fw-semibold text-dark" id="page-title">Dashboard</h5>
                     </div>
                 </div>
@@ -444,7 +444,7 @@
                 <div class="dashboard-hero mb-4">
                     <div class="dashboard-hero-content">
                         <div class="eyebrow"><i class="bi bi-buildings me-1"></i> Corte Superior de Justicia del Santa · Archivo Desconcentrado</div>
-                        <h1>SAAMIR</h1>
+                        <h1>SIGAD</h1>
                         <p>Sistema de Administración de Archivos, Microformas, Inventario y Reportes</p>
                         <span class="hero-status"><i class="bi bi-shield-check"></i> Plataforma de gestión y trazabilidad documental</span>
                     </div>
@@ -1246,16 +1246,16 @@
     <script defer src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.29/jspdf.plugin.autotable.min.js"></script>
 
     <div id="saamir-boot-error" style="display:none; position:fixed; inset:auto 20px 20px 20px; z-index:99999; background:#fff3cd; color:#664d03; border:1px solid #ffecb5; border-radius:12px; padding:14px 18px; box-shadow:0 8px 30px rgba(0,0,0,.12);">
-        <strong>SAAMIR no pudo iniciar completamente.</strong> Verifique la conexión y vuelva a cargar la página.
+        <strong>SIGAD no pudo iniciar completamente.</strong> Verifique la conexión y vuelva a cargar la página.
     </div>
 
     <!-- INICIO DEL MOTOR LOGICO ASOCIADO A FIREBASE -->
     <script type="module">
-        // Cargar el motor de SAAMIR después de que la interfaz HTML esté lista.
+        // Cargar el motor de SIGAD después de que la interfaz HTML esté lista.
         // Así las importaciones de Firebase no mantienen la página en estado de carga.
         window.addEventListener('DOMContentLoaded', () => {
             import('./app.js').catch(error => {
-                console.error('SAAMIR: no se pudo iniciar el motor:', error);
+                console.error('SIGAD: no se pudo iniciar el motor:', error);
                 const aviso = document.getElementById('saamir-boot-error');
                 if (aviso) aviso.style.display = 'block';
             });

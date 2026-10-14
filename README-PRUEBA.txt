@@ -4,8 +4,8 @@ PRUEBA: Subir el CONTENIDO de esta carpeta a un repositorio privado o servirlo l
 
 REALIZADO:
 - Diseño principal de SIGAD v0.4 conservado.
-- Nueve pantallas integradas dentro del menú SIGAD (sin iframe ni enlace SAAMIR).
-- Acceso directo a colecciones originales de SAAMIR en Firebase mediante su autenticación.
+- Nueve pantallas integradas dentro del menú SIGAD (sin iframe ni enlace módulo documental original).
+- Acceso directo a colecciones originales de módulo documental original en Firebase mediante su autenticación.
 - Consulta y búsqueda de inventarios, reingresos, traslados, tarjetas y microformas; exportación CSV.
 - Formularios nuevos de captura simplificada; los correlativos de reingresos y traslados se asignan en transacciones Firestore.
 - Búsqueda de movimientos por código exacto de paquete en Auditoría; eventos nuevos en colección sigad_eventos cuando los permisos lo permiten.
@@ -13,7 +13,7 @@ REALIZADO:
 
 LIMITACIONES IMPORTANTES:
 - No es producción y NO está certificada 100% funcional: hace falta prueba real con cuentas, Firebase, reglas, y datos existentes.
-- Los formularios son simplificados: no han migrado las funcionalidades avanzadas (PDFs institucionales, carga múltiple, rangos, edición, filtros especializados, reportes originales de SAAMIR).
+- Los formularios son simplificados: no han migrado las funcionalidades avanzadas (PDFs institucionales, carga múltiple, rangos, edición, filtros especializados, reportes originales de módulo documental original).
 - SIGAD v0.4 sigue guardando devolución de cargos, transferencias documentales y eliminación en localStorage. Su migración a Firebase, login común y permisos institucionales está pendiente.
 - La línea de tiempo cubre coincidencias exactas; no recorre íntegramente rangos de paquetes. No hay conexión API verificada con SAMICERT.
 - La auditoría transversal requiere reglas Firestore para sigad_eventos, y no sustituye los registros históricos.
