@@ -1,12 +1,12 @@
 import {getFirestore,collection,getDocs,doc,getDocFromServer,updateDoc,serverTimestamp,query,orderBy,limit} from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
 const ROOT='MmniSKpNWPN2saVja2wVTPaiBnn2';
-const MODULES=['inventario','reingresos','traslados','tarjetas','microformas'];
+const MODULES=['inventario','reingresos','traslados','tarjetas','microformas','oficios','transferencias','eliminaciones','archivo360'];
 const ACTIONS=['leer','crear','editar','eliminar'];
 const LEGACY_WRITERS={
  inventario:['ALFREDO CRUZADO','ACRUZADO','ROBERTO DAVILA','RDAVILA','JORGE IZQUIERDO','JIZQUIERDO','MANUEL BARANDIARAN','MBARANDIARAN','TEOFILO GABINO','TGABINO'],
  reingresos:['ALFREDO CRUZADO','ACRUZADO','ROBERTO DAVILA','RDAVILA','JORGE IZQUIERDO','JIZQUIERDO','MANUEL BARANDIARAN','MBARANDIARAN'],
  traslados:['ALFREDO CRUZADO','ACRUZADO','ROBERTO DAVILA','RDAVILA','JORGE IZQUIERDO','JIZQUIERDO','MANUEL BARANDIARAN','MBARANDIARAN'],
- microformas:['ALFREDO CRUZADO','ACRUZADO'], tarjetas:[]
+ microformas:['ALFREDO CRUZADO','ACRUZADO'], tarjetas:[],oficios:[],transferencias:[],eliminaciones:[],archivo360:[]
 };
 const $=id=>document.getElementById(id);
 const escapeHtml=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));

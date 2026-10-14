@@ -335,15 +335,6 @@
         }
 
         ejecutarCuandoDOMListo(() => {
-            let correoGuardado = localStorage.getItem('saamir_ultimo_correo');
-            if (correoGuardado) {
-                if (correoGuardado.includes('@')) {
-                    correoGuardado = correoGuardado.split('@')[0];
-                    localStorage.setItem('saamir_ultimo_correo', correoGuardado);
-                }
-                const inputEmail = document.getElementById("login-alias");
-                if (inputEmail) inputEmail.value = correoGuardado;
-            }
             inicializarAniosIngresoTarjetas();
             // El generador de tarjetas ya NO agrega filas vacías por defecto.
             // El usuario decide cuántas filas necesita con los botones
@@ -604,7 +595,6 @@
             const password = document.getElementById('login-password').value;
             const email = entrada.includes('@') ? entrada : `${entrada}@${DOMINIO_INSTITUCIONAL}`;
             try {
-                localStorage.setItem('saamir_ultimo_correo', entrada);
                 await signInWithEmailAndPassword(auth, email, password);
                 Swal.fire({ toast: true, position: 'top-end', icon: 'success', title: 'Acceso Autorizado', showConfirmButton: false, timer: 2000 });
             } catch (error) {

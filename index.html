@@ -49,7 +49,7 @@
 <a class="nav-item external" href="https://samicert.ecomindsetgo.com" target="_blank" rel="noopener"><span data-icon="file"></span>SAMICERT <b>↗</b></a>
 <details class="nav-group"><summary><span data-icon="settings"></span> Administración</summary><div class="nav-group-body"><button class="nav-item" data-view="reportes">Reportes</button><button class="nav-item" data-view="auditoria">Auditoría y trazabilidad</button><button class="nav-item" data-view="configuracion">Configuración</button><button class="nav-item" id="sigad-admin-entry" data-view="usuarios-admin" hidden>Usuarios y permisos</button></div></details>
 <button class="nav-item" data-view="asistente"><span data-icon="bot"></span>Asistente IA</button>
-</nav><button class="sidebar-user" data-go="mi-cuenta"><span class="avatar" data-icon="user"></span><span><strong class="profile-name">Usuario SIGAD</strong><small>Sesión institucional</small></span><b>›</b></button>    <button id="sigad-global-logout" class="nav-item" type="button"><span data-icon="user"></span>Cerrar sesión</button><div class="sidebar-foot"><span class="dot local"></span><span id="storageStatus">Datos en este navegador</span><small>SIGAD unificado v2.3 · Archivo Desconcentrado</small></div>
+</nav><button class="sidebar-user" data-go="mi-cuenta"><span class="avatar" data-icon="user"></span><span><strong class="profile-name">Usuario SIGAD</strong><small>Sesión institucional</small></span><b>›</b></button>    <button id="sigad-global-logout" class="nav-item" type="button"><span data-icon="user"></span>Cerrar sesión</button><div class="sidebar-foot"><small>SIGAD v2.0 · Archivo Desconcentrado</small></div>
   </aside>
 
   <main class="main">
@@ -202,7 +202,7 @@
 <article class="panel"><div class="view-toolbar"><div><h3>Solicitudes de recuperación</h3><p>Verifica la identidad del trabajador antes de iniciar el restablecimiento administrativo.</p></div><button type="button" class="secondary" id="ua-recovery-refresh">Actualizar solicitudes</button></div><p id="ua-recovery-status" role="status"></p><div id="ua-recovery-list" class="ua-list"></div></article><article class="panel"><h3>Gestión de cuentas en plan gratuito</h3><p>Para dar de alta, deshabilitar o eliminar una cuenta, utiliza la consola de autenticación. Desde SIGAD puedes autorizar o retirar las acciones de los usuarios registrados. Los cambios de permisos se validan en las reglas de seguridad.</p></article>
 </section>
     <section class="view" id="view-mi-cuenta"><div class="view-toolbar"><div><h2>Mi cuenta</h2><p>Datos de la cuenta autenticada, sin información de sesiones anteriores.</p></div></div><article class="panel"><h3>Información personal</h3><form id="profileForm" class="form-grid"><label>Correo de acceso<input id="profileEmail" readonly aria-label="Correo de acceso"></label><label>Nombre completo<input id="profileName" maxlength="80" minlength="3" required autocomplete="name" placeholder="Nombre completo"></label><div class="span-2"><button type="submit" class="primary" id="profileSave">Guardar nombre</button><p id="profileStatus" role="status" aria-live="polite"></p></div></form><p>El nombre se guarda en tu perfil institucional. Tu correo, UID y permisos no cambian.</p></article><article class="panel"><h3>Seguridad</h3><p>Para cambiar tu contraseña, utiliza el proceso de recuperación o cambio de clave disponible para tu cuenta. No compartas tu contraseña con nadie.</p></article></section>
-    <section class="view" id="view-configuracion"><div class="view-toolbar"><div><h2>Configuración</h2><p>Personalice la interfaz y administre sus respaldos.</p></div></div><article class="panel"><h3>Datos y respaldo</h3><p>Los registros se guardan en este navegador. Descargue un respaldo antes de borrar datos del navegador o cambiar de equipo.</p><button id="settingsBackup" class="primary">Respaldo y restauración</button></article><article class="panel"><h3>Sistemas externos</h3><p>Inventario, reingresos, traslados, tarjetas y microformas comparten los registros institucionales. SAMICERT permanece como sistema externo; su sincronización automática está pendiente.</p></article></section>
+    <section class="view" id="view-configuracion"><div class="view-toolbar"><div><h2>Configuración</h2><p>Personalice la interfaz y administre sus respaldos.</p></div></div><article class="panel"><h3>Datos y respaldo</h3><p>Los registros se consultan desde la base institucional compartida. Los respaldos deben gestionarse de forma controlada.</p><button id="settingsBackup" class="primary">Respaldo y restauración</button></article><article class="panel"><h3>Sistemas externos</h3><p>Inventario, reingresos, traslados, tarjetas y microformas comparten los registros institucionales. SAMICERT permanece como sistema externo; su sincronización automática está pendiente.</p></article></section>
   </main>
 <aside id="assistantRail" class="assistant-rail" aria-label="Asistente SIGAD">
   <div class="assistant-heading"><span class="bot-emblem" data-icon="bot"></span><div><h2>Asistente SIGAD <span class="beta">BETA</span></h2><p>Consulta la información del Archivo</p></div><button id="closeAssistant" class="icon-control" aria-label="Minimizar asistente">−</button></div>
@@ -212,7 +212,7 @@
 </aside>
 </div>
 <div id="assistantBackdrop" class="assistant-backdrop"></div>
-<dialog id="searchDialog" class="search-dialog"><div class="search-dialog-head"><span data-icon="search"></span><input id="globalSearch" placeholder="Buscar oficio, dependencia, paquete o módulo" aria-label="Buscar en SIGAD" autocomplete="off"><button class="icon-control" id="closeSearch" aria-label="Cerrar búsqueda">×</button></div><div id="searchResults"></div><p>Busca en los registros de este navegador. Esc para cerrar.</p></dialog>
+<dialog id="searchDialog" class="search-dialog"><div class="search-dialog-head"><span data-icon="search"></span><input id="globalSearch" placeholder="Buscar oficio, dependencia, paquete o módulo" aria-label="Buscar en SIGAD" autocomplete="off"><button class="icon-control" id="closeSearch" aria-label="Cerrar búsqueda">×</button></div><div id="searchResults"></div><p>Busca en los registros institucionales disponibles. Esc para cerrar.</p></dialog>
 <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
 <div class="toast-region" id="toastRegion" aria-live="polite" aria-atomic="true"></div>
 
@@ -258,9 +258,9 @@
 
 <div class="modal" id="backupModal" aria-hidden="true">
   <div class="modal-card">
-    <div class="modal-head"><div><h3>Respaldo y migración</h3><p>Exporte toda la información local o restaure un respaldo.</p></div><button class="icon-btn modal-close">×</button></div>
+    <div class="modal-head"><div><h3>Respaldo y migración</h3><p>Descargue una copia de los registros disponibles. La restauración requiere validación administrativa.</p></div><button class="icon-btn modal-close">×</button></div>
     <div class="backup-actions"><button class="primary" id="btnExportBackup">Descargar respaldo JSON</button><label class="secondary file-btn">Restaurar respaldo<input type="file" id="backupFile" accept=".json"></label></div>
-    <div class="notice"><strong>Configuración institucional.</strong><p>Los módulos operativos utilizan cuentas institucionales existentes. La centralización de los módulos locales y los permisos por rol requieren validación antes de producción.</p></div>
+    <div class="notice"><strong>Configuración institucional.</strong><p>Los módulos operativos utilizan cuentas institucionales existentes. Compruebe el estado de sincronización y sus autorizaciones antes de registrar operaciones.</p></div>
   </div>
 </div>
 <script src="js/archivo-original.js" defer></script></body>

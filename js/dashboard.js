@@ -47,7 +47,7 @@ if(numbered){const id=Number(numbered[1]),list=d.offices.filter(x=>Number(String
 if(lastOffice&&/^(y |sus |cuales son sus|que dependencias|de que modulo|a que modulo)/.test(s)){const r=d.offices.find(x=>x.id===lastOffice);if(r)return officeCard(r)}
 if((s.includes('donde')||s.includes('ubic')||s.includes('busca'))&&pkg){const info=window.SIGAD360?.findPackageInfo(pkg),matches=SIGAD.findPackage(pkg);const found=info?.found||matches.length;return found?`<p>El paquete <b>${esc(pkg)}</b> corresponde a ${esc(info?.found?info.text:matches.map(x=>`${x.repo}, sector ${x.sector||'por definir'}, estantería ${x.shelf||'por definir'}, nivel ${x.level||'por definir'}`).join('; '))}.</p><button class="secondary small" data-package="${esc(pkg)}">Ver ubicación en Archivo 360</button>`:`No encontré el paquete ${esc(pkg)} en los rangos configurados.`}
 const o=p.filter(d.offices.filter(x=>x.status==='generado')),t=p.filter(d.transfers),e=p.filter(d.eliminations),tc=completedT(t),ec=completedE(e);
-const scope=`<small class="answer-scope">Periodo: ${esc(p.label)} · Fuente: registros locales</small>`;
+const scope=`<small class="answer-scope">Periodo: ${esc(p.label)} · Fuente: registros institucionales compartidos</small>`;
 if(s.includes('resumen'))return scope+`<b>Resumen de gestión</b><ul><li>${fmt(o.length)} oficios generados: ${fmt(o.reduce((v,r)=>v+total(r,'packages'),0))} paquetes y ${fmt(o.reduce((v,r)=>v+total(r,'files'),0))} expedientes.</li><li>${fmt(tc.length)} transferencias concluidas: ${fmt(sum(tc,'packages'))} paquetes; ${t.length-tc.length} pendientes.</li><li>${fmt(ec.length)} eliminaciones concluidas: ${fmt(sum(ec,'packages'))} paquetes; ${fmt(sum(ec,'meters'))} metros lineales liberados; ${e.length-ec.length} pendientes.</li></ul>`;
 if(s.includes('samicert'))return 'La certificación documental se gestiona mediante el acceso independiente del sistema de certificación.';
 if(s.includes('oficio')){const known=[...new Set(d.offices.flatMap(x=>[x.recipientRole,...(x.dependencies||[]).map(z=>z.name)]).filter(Boolean))],dep=known.find(x=>s.includes(norm(x))),list=dep?o.filter(x=>norm(x.recipientRole)===norm(dep)||(x.dependencies||[]).some(z=>norm(z.name)===norm(dep))):o;if(/dependencia|modulo|juzgado/.test(s)&&!dep)return 'Indica el número del oficio (por ejemplo, «¿De qué dependencia es el Oficio 001?») o escribe el nombre completo de la dependencia registrada.';return scope+`Hay <b>${fmt(list.length)} oficios generados</b>${dep?' vinculados a '+esc(dep):''}, con ${fmt(list.reduce((v,r)=>v+total(r,'packages'),0))} paquetes y ${fmt(list.reduce((v,r)=>v+total(r,'files'),0))} expedientes.`+(list.length?'<div class="answer-links">'+list.slice(0,12).map(r=>`<button data-office-answer="${esc(r.id)}">Oficio ${esc(r.number)} · ${esc(r.recipientRole||'Sin dependencia')}</button>`).join('')+'</div>':'')}
@@ -60,31 +60,50 @@ return 'Puedo responder preguntas basadas en los registros autorizados de SIGAD,
 function bindAnswers(){const host=$('#assistantMessages');$$('[data-office-open]',host).forEach(b=>b.onclick=()=>SIGAD.viewOffice(b.dataset.officeOpen));$$('[data-office-answer]',host).forEach(b=>b.onclick=()=>{const r=data().offices.find(x=>x.id===b.dataset.officeAnswer);if(r){lastOffice=r.id;appendBot(officeCard(r))}});$$('[data-package]',host).forEach(b=>b.onclick=()=>{SIGAD.navigate('archivo360');$('#packageSearch').value=b.dataset.package;SIGAD360.search(b.dataset.package);if(innerWidth<1400)closeAssistant()});$$('[data-ask]',host).forEach(b=>b.onclick=()=>send(b.textContent));}
 function appendBot(html){const host=$('#assistantMessages');host.insertAdjacentHTML('beforeend',`<div class="chat-line bot-line"><span class="chat-avatar">${icon('bot')}</span><div class="msg bot">${html}</div></div>`);bindAnswers();host.scrollTop=host.scrollHeight;}
 async function enhancedAnswer(q){
- const s=norm(q);
- const operational=/inventari|reingres|traslad|tarjeta|microforma|repositorio|actividad mensual|movimientos|registrados|registros operativos|todos los modulos|resumen general|panorama general/.test(s);
- const lookup=/historial|buscar|busca|consulta|detalle|paquete|expediente|oficio/.test(s);
- if(operational && window.SIGADOperational?.summary){
-  const r=await window.SIGADOperational.summary();
-  if(!r)return 'No se pudo consultar la información operativa. Vuelva a iniciar sesión.';
-  const names={inventario:'Inventario',reingresos:'Reingresos',traslados:'Traslados',tarjetas:'Tarjetas',microformas:'Microformas'};
-  let html='<b>Operaciones institucionales</b><ul>'+Object.entries(names).map(([key,label])=>'<li>'+label+': <b>'+(r.counts[key]===null?'No disponible':fmt(r.counts[key]??0))+'</b></li>').join('')+'</ul>';
-  if(/repositorio|distribucion/.test(s))html+='<b>Distribución de inventario por repositorio</b><ul>'+(Object.entries(r.repos).map(([repo,total])=>'<li>'+esc(repo)+': '+fmt(total)+' paquetes registrados</li>').join('')||'<li>Sin datos de inventario accesibles</li>')+'</ul>';
-  if(/mes|actividad|octubre|septiembre|agosto|julio|junio|mayo|abril|marzo|febrero|enero|noviembre|diciembre/.test(s)){
-   const entries=Object.entries(r.monthly).sort((a,b)=>b[0].localeCompare(a[0])).slice(0,12);
-   html+='<b>Actividad mensual disponible</b><ul>'+(entries.map(([ym,row])=>'<li>'+esc(ym)+': '+Object.entries(row).map(([k,v])=>esc(names[k]||k)+' '+fmt(v)).join(' · ')+'</li>').join('')||'<li>Sin registros fechados disponibles</li>')+'</ul>';
-  }
-  if(r.errors.length)html+='<p><small>Consulta parcial: '+esc(r.errors.join(' · '))+'. No se interpretan como cero.</small></p>';
-  html+='<small>Fuente: registros operativos accesibles según permisos de la sesión. Los totales de módulos diferentes no se suman como inventario único.</small>';
+ const s=norm(q), operational=window.SIGADOperational;
+ const codes=q.match(/\b(?:\d{2}-\d+[A-Za-z]*|\d+R)\b/i);
+ const lookup=/historial|buscar|busca|consulta|detalle|ubicacion|donde|paquete|expediente/.test(s);
+ if(codes && lookup && operational?.search){
+  const res=await operational.search(codes[0]);
+  let html='<b>Coincidencias para '+esc(codes[0])+'</b>';
+  html+=res.items.length?'<ul>'+res.items.map(x=>'<li><b>'+esc(x.modulo)+'</b> · '+esc(x.detalle)+' · '+esc(x.fecha)+' · '+esc(x.responsable)+'</li>').join('')+'</ul>':'<p>No encontré coincidencias exactas en los registros accesibles. Esto no descarta rangos que contengan el paquete.</p>';
+  if(res.errors?.length)html+='<small>Consulta parcial: '+esc(res.errors.join(' · '))+'</small>';
   return html;
  }
- if(lookup && window.SIGADOperational?.search){
-  const hit=q.match(/\b(?:\d{2}-\d+[A-Za-z]*|\d+R)\b/i);
-  if(hit){const res=await window.SIGADOperational.search(hit[0]);
-    let html='<b>Coincidencias operativas para '+esc(hit[0])+'</b>';
-    html+=res.items.length?'<ul>'+res.items.map(x=>'<li><b>'+esc(x.modulo)+'</b> · '+esc(x.detalle)+' · '+esc(x.fecha)+' · '+esc(x.responsable)+'</li>').join('')+'</ul>':'<p>No encontré una coincidencia textual en los registros accesibles. La búsqueda no cubre necesariamente todos los rangos.</p>';
-    if(res.errors.length)html+='<small>Consultas no disponibles: '+esc(res.errors.join(', '))+'</small>';
-    return html;
+ const modNames={inventario:'Inventario',reingresos:'Reingresos',traslados:'Traslados',tarjetas:'Tarjetas',microformas:'Microformas'};
+ const synonyms={inventario:/inventari|censo/,reingresos:/reingres/,traslados:/traslad/,tarjetas:/tarjeta/,microformas:/microforma/};
+ const requested=Object.keys(synonyms).filter(k=>synonyms[k].test(s));
+ const repos=/repositorio|distribucion|saenz pena|sotano|padilla|dunas/.test(s);
+ const monthNames=['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+ const monthIdx=monthNames.findIndex(m=>s.includes(m));
+ const ym=s.match(/\b(20\d{2})[-\/](0?[1-9]|1[0-2])\b/);
+ const yearHit=s.match(/\b20\d{2}\b/);
+ const isMonthly=/mes|mensual|actividad|por fecha|periodo|semestre|ano|anual|este ano/.test(s)||monthIdx>=0||!!ym;
+ const general=/todos los modulos|resumen general|panorama general|operaciones institucionales|resumen de todo|todas las operaciones|estado general/.test(s);
+ if(operational?.summary && (requested.length||repos||isMonthly||general)){
+  const r=await operational.summary();
+  if(!r)return 'No pude verificar la sesión o los permisos para consultar los registros.';
+  const footer=r.errors?.length?'<p><small>Datos parciales; sin acceso a: '+esc(r.errors.join(' · '))+'. Los módulos inaccesibles no se cuentan como cero.</small></p>':'';
+  const count=k=>r.counts[k]===null||r.counts[k]===undefined?'No disponible':fmt(r.counts[k]);
+  const allKeys=Object.keys(modNames);
+  const years=Object.keys(r.monthly||{}).sort();
+  if(isMonthly){
+   const selectedYear=ym?.[1]||yearHit?.[0]||String(new Date().getFullYear());
+   const selectedMonth=ym?String(Number(ym[2])).padStart(2,'0'):monthIdx>=0?String(monthIdx+1).padStart(2,'0'):null;
+   const entries=years.filter(k=>k.startsWith(selectedYear)&&(selectedMonth?k===selectedYear+'-'+selectedMonth:true));
+   const keys=requested.length?requested:allKeys;
+   let html='<b>Actividad '+(selectedMonth?monthNames[Number(selectedMonth)-1]+' de ':'del año ')+esc(selectedYear)+'</b>';
+   html+=entries.length?'<ul>'+entries.map(k=>'<li><b>'+esc(k)+'</b>: '+keys.map(id=>esc(modNames[id])+': '+fmt((r.monthly[k]||{})[id]||0)).join(' · ')+'</li>').join('')+'</ul>':'<p>No encontré registros fechados para ese período en los módulos consultados.</p>';
+   return html+footer+'<small>Se cuentan registros fechados; no paquetes únicos.</small>';
   }
+  if(repos){
+   const entries=Object.entries(r.repos||{}).sort((a,b)=>b[1]-a[1]);
+   const found=entries.filter(([n])=>/saenz pena|sotano|padilla|dunas/.test(s)?norm(n).includes(s.includes('dunas')?'dunas':s.includes('padilla')?'padilla':s.includes('sotano')?'sotano':'saenz'):true);
+   return '<b>Inventario por repositorio</b>'+(found.length?'<ul>'+found.map(([name,n])=>'<li>'+esc(name)+': <b>'+fmt(n)+'</b> paquetes registrados</li>').join('')+'</ul>':'<p>No hay cantidades disponibles para ese repositorio.</p>')+footer+'<small>Fuente: cantidades declaradas en inventario; no representa necesariamente existencias físicas actuales.</small>';
+  }
+  const keys=requested.length?requested:allKeys;
+  const title=requested.length===1?modNames[requested[0]]:requested.length?'Módulos solicitados':'Resumen general de operaciones';
+  return '<b>'+esc(title)+'</b><ul>'+keys.map(k=>'<li>'+esc(modNames[k])+': <b>'+count(k)+'</b> registros</li>').join('')+'</ul>'+footer+'<small>Se muestran registros, no paquetes únicos. Para un periodo indica mes y año.</small>';
  }
  return answer(q);
 }

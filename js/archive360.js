@@ -36,7 +36,7 @@ function parseDunas(text){
   if(n<1||n>year[1])return{error:`La serie ${m[2]}T va del 01 al ${year[1]}.`};
   return{global:year.off+n-1,code:`${pad(n)}-${m[2]}T`};
 }
-function ranges(){try{return JSON.parse(localStorage.getItem(RANGE_KEY)||'[]')}catch{return[]}}
+function ranges(){return window.SIGAD?.getData?.().ranges||[]}
 function parseGeneric(code,prefix){
   const c=String(code||'').trim().toUpperCase(),p=String(prefix||'').trim().toUpperCase();
   if(p==='R'){const m=c.match(/^(\d+)R$/);return m?num(m[1]):null}
