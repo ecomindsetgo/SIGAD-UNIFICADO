@@ -1,0 +1,10 @@
+SIGAD v2.2 - Correcciones de identidad y contraseña
+- Comprueba el perfil del UID autenticado antes de habilitar el panel y antes de montar los módulos operativos.
+- El cambio de cuenta retira el marco operativo existente para evitar visualizar datos de una sesión anterior.
+- La identidad visible procede de la cuenta autenticada; se elimina el nombre prellenado de Configuración.
+- Se retiran referencias visibles a la marca heredada, sin renombrar selectores, claves de datos o clases necesarias para compatibilidad.
+- El worker deja de responder con JavaScript viejo desde caché.
+
+ADVERTENCIA: este proyecto sigue teniendo módulos SIGAD propios con almacenamiento local. La protección de cambio de clave aún necesita validación de seguridad del lado del servidor; no se debe considerar a prueba de evasión.
+No sobrescribir reglas de Firestore por este paquete. No hay cambios en cuentas ni registros.
+Después de subir, abrir en ventana privada y comprobar dos usuarios distintos.

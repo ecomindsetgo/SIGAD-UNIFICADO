@@ -43,6 +43,26 @@ service cloud.firestore {
   match /control_microformas/{id}{allow read:if grant('microformas','leer');allow create:if grant('microformas','crear');allow update:if grant('microformas','editar');allow delete:if grant('microformas','eliminar');}
   match /tarjetas_paquetes/{id}{allow read:if grant('tarjetas','leer');allow create:if grant('tarjetas','crear');allow update:if grant('tarjetas','editar') && (request.resource.data.get('activo',true) != false || resource.data.get('activo',true) == false || grant('tarjetas','eliminar'));allow delete:if grant('tarjetas','eliminar');}
   match /contadores/{id}{allow read:if grant('reingresos','leer') || grant('traslados','leer');allow create,update:if id in ['reingresos','traslados'] && (grant('reingresos','crear') || grant('traslados','crear'));allow delete:if false;}
+  // Solicitudes de ayuda: formulario público sin exposición de listados ni UIDs.
+  // La consola debe configurar App Check y/o protección adicional contra abuso antes de producción.
+  match /solicitudes_recuperacion/{id} {
+   allow create: if request.resource.data.keys().hasOnly(['correo','estado','origen','creadoEn'])
+    && request.resource.data.keys().hasAll(['correo','estado','origen','creadoEn'])
+    && request.resource.data.correo is string
+    && request.resource.data.correo.size() >= 5 && request.resource.data.correo.size() <= 254
+    && request.resource.data.correo.matches('^[^ @]+@[^ @]+\\.[^ @]+$')
+    && request.resource.data.estado == 'pendiente'
+    && request.resource.data.origen == 'portal_sigad'
+    && request.resource.data.creadoEn == request.time;
+   allow read: if root();
+   allow update: if root()
+    && resource.data.estado == 'pendiente'
+    && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['estado','atendidoEn','atendidoPor'])
+    && request.resource.data.estado == 'atendida'
+    && request.resource.data.atendidoEn == request.time
+    && request.resource.data.atendidoPor == request.auth.uid;
+   allow delete: if false;
+  }
   match /{path=**}{allow read,write:if false;}
  }
 }

@@ -1,6 +1,6 @@
 import {initializeApp,getApps} from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
 import {getAuth,signInWithEmailAndPassword,signOut,onAuthStateChanged} from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
-import {getFirestore,collection,getDocs,addDoc,doc,runTransaction} from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-lite.js';
+import {getFirestore,collection,getDocs,addDoc,doc,getDoc,runTransaction} from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-lite.js';
 
 // Compatible con la base Firestore que ya contiene los registros originales.
 // Las reglas de seguridad deben restringir todas las operaciones por rol.
@@ -9,7 +9,7 @@ const app=getApps().find(a=>a.name==='[DEFAULT]')||initializeApp(config);
 const auth=getAuth(app),db=getFirestore(app);
 const $=id=>document.getElementById(id), esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const fecha=()=>new Date().toLocaleDateString('en-CA');
-const username=()=>auth.currentUser?.displayName||auth.currentUser?.email||'';
+let verifiedName='';const username=()=>verifiedName||auth.currentUser?.email||'';
 const modules={inventario:'censo_institucional','consultar-inventario':'censo_institucional',reingresos:'reingresos','consultar-reingresos':'reingresos',traslados:'traslados','consultar-traslados':'traslados',tarjetas:'tarjetas_paquetes','consultar-tarjetas':'tarjetas_paquetes',microformas:'control_microformas'};
 const labels={inventario:'Inventario y censo',reingresos:'Reingresos',traslados:'Traslados',tarjetas:'Tarjetas',microformas:'Microformas'};
 const readonly=v=>v.startsWith('consultar-');
@@ -81,7 +81,15 @@ const loginForm=$('sigad-login-form');
 const feedback=$('sigad-login-feedback');
 loginForm.addEventListener('submit',async e=>{e.preventDefault();const button=loginForm.querySelector('button');button.disabled=true;feedback.textContent='Verificando credenciales…';try{await signInWithEmailAndPassword(auth,loginForm.elements.email.value.trim(),loginForm.elements.password.value);loginForm.reset();}catch(error){feedback.textContent='No se pudo iniciar sesión. Verifique su cuenta, contraseña y autorización.';}finally{button.disabled=false;}});
 $('sigad-global-logout').addEventListener('click',()=>signOut(auth));
-onAuthStateChanged(auth,user=>{document.body.classList.toggle('sigad-locked',!user);gate.hidden=!!user;if(user){window.dispatchEvent(new Event('sigad:sesion-activa'));document.querySelectorAll('.profile-name').forEach(el=>el.textContent=user.displayName||user.email||'Usuario SIGAD');feedback.textContent='';}else{records.clear();feedback.textContent='Inicie sesión para continuar.';}for(const id of Object.keys(modules)){const slot=rootFor(id);if(slot&&slot.closest('.view.active')){render(id);break}}});
+onAuthStateChanged(auth,user=>{document.body.classList.toggle('sigad-locked',!user);gate.hidden=!!user;if(user){verifiedName='';window.dispatchEvent(new Event('sigad:sesion-activa'));document.querySelectorAll('.profile-name').forEach(el=>el.textContent=user.displayName||user.email||'Usuario SIGAD');feedback.textContent='';const p=document.getElementById('profileName');if(p)p.value=user.displayName||user.email||'';}else{verifiedName='';document.getElementById('profileName').value='';records.clear();feedback.textContent='Inicie sesión para continuar.';}for(const id of Object.keys(modules)){const slot=rootFor(id);if(slot&&slot.closest('.view.active')){render(id);break}}});
+window.addEventListener('sigad:acceso-verificado',async e=>{
+ const uid=e.detail?.uid;if(!e.detail?.ready||!uid){verifiedName='';document.querySelectorAll('.profile-name').forEach(x=>x.textContent='Usuario SIGAD');return;}
+ try{const snap=await getDoc(doc(db,'usuarios',uid));if(auth.currentUser?.uid!==uid||!window.SIGADPasswordGate?.isReady())return;
+ const data=snap.data()||{};verifiedName=String(data.nombre||data.nombreCompleto||auth.currentUser.email||'Usuario SIGAD');
+ document.querySelectorAll('.profile-name').forEach(x=>x.textContent=verifiedName);
+ const field=document.getElementById('profileName');if(field)field.value=verifiedName;
+ }catch(err){console.warn('No se pudo cargar identidad de perfil',err);}
+});
 window.addEventListener('sigad:modulo',e=>{ if(!window.SIGADLegacyModuleViews?.includes(e.detail)) render(e.detail); });
 window.SIGADOperaciones={getStatus:()=>({autenticado:!!auth.currentUser,usuario:username()})};
 

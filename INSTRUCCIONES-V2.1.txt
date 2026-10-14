@@ -1,0 +1,11 @@
+SIGAD v2.1 — Solicitudes de asistencia y aclaración de sesión
+
+1. NO reemplazar reglas de producción sin probar en el simulador de reglas y comparar con las reglas vigentes de SAAMIR/SIGAD.
+2. Publicar el frontend y abrir inicio de sesión sin autenticar. "Solicitar ayuda al administrador" crea una solicitud en solicitudes_recuperacion sin almacenar contraseñas, documentos ni UID.
+3. El usuario NO prueba que sea dueño del correo al enviar la solicitud. El Administrador General DEBE verificar identidad fuera de la aplicación antes de cualquier restablecimiento.
+4. Para revisar solicitudes: iniciar sesión con UID MmniSKpNWPN2saVja2wVTPaiBnn2 → Administración → Usuarios y permisos → Solicitudes de recuperación.
+5. Marcar atendida solo después de utilizar el flujo seguro de Cloud Shell y comprobarlo. NO realiza reset automático.
+6. La pantalla obligatoria de contraseña ahora muestra el correo y UID exactos de la SESIÓN ABIERTA. Si ves acruzado tras resetear otro usuario, estás autenticado como acruzado o su perfil tiene cambioClavePendiente=true. Cierra sesión y usa la cuenta objeto de prueba. No elimines el marcador sin resolver su situación.
+7. LIMITACIÓN: creación pública en Firestore desde GitHub Pages es susceptible a spam/uso abusivo, y la limitación de 15 minutos solo protege ese navegador. Se recomienda añadir App Check con reCAPTCHA Enterprise/otro mecanismo admitido o un servidor protector; revisar los costos y disponibilidad del plan Spark. No desplegar el formulario público sin aceptar y mitigar el riesgo.
+8. Conserva cuentas y UID. La herramienta Python de v2.0 NO se modifica y exige perfil de usuario existente.
+9. Seguridad: el bloqueo de cambio de clave de la v2.0 es principalmente de interfaz; las reglas no pueden verificar criptográficamente que la contraseña se cambió. No utilizarlo como garantía antifraude.

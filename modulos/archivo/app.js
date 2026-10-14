@@ -15,7 +15,7 @@
         const auth = getAuth(app);
         const db = getFirestore(app);
 
-        // Las consultas de lectura nunca deben dejar a SAAMIR esperando indefinidamente.
+        // Las consultas de lectura nunca deben dejar a SIGAD esperando indefinidamente.
         // Si Firebase no responde dentro del tiempo establecido, el módulo continúa
         // disponible y muestra su propio estado de error/carga.
         const FIREBASE_READ_TIMEOUT = 15000;
@@ -675,6 +675,7 @@
             const nuevaClave = document.getElementById('perf-new-password').value;
             const confirmaClave = document.getElementById('perf-confirm-password').value;
             if (!user) return;
+            if (nuevaClave.length < 8 || !/[A-ZÁÉÍÓÚÑ]/.test(nuevaClave) || !/[a-záéíóúñ]/.test(nuevaClave) || !/[^\p{L}\p{N}\s]/u.test(nuevaClave)) { Swal.fire('Aviso', 'La clave debe tener al menos 8 caracteres, una mayúscula, una minúscula y un carácter especial.', 'warning'); return; }
             if (nuevaClave !== confirmaClave) { Swal.fire('Aviso', 'Las claves no coinciden.', 'warning'); return; }
             try {
                 await updatePassword(user, nuevaClave);

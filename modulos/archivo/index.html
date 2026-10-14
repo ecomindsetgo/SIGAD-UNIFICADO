@@ -116,7 +116,7 @@
 
                 <div class="nav-group nav-group-account">
                     <button type="button" class="nav-group-title" onclick="toggleNavGroup(this.parentElement)" aria-expanded="false"><span class="nav-group-title-main"><i class="bi bi-person-gear"></i><span>Cuenta</span></span><i class="bi bi-chevron-down nav-group-chevron"></i></button>
-                    <a class="nav-link" href="#" data-view="view-perfil" onclick="switchView('view-perfil', 'Mi Perfil / Cuenta'); return false;">
+                    <a class="nav-link" href="#" data-view="view-perfil" style="display:none!important" onclick="switchView('view-perfil', 'Mi Perfil / Cuenta'); return false;">
                         <span class="nav-icon"><i class="bi bi-person-vcard"></i></span><span>Perfil y contraseña</span>
                     </a>
                     <a class="nav-link" href="#" data-view="view-configuracion" onclick="switchView('view-configuracion', 'Configuración'); return false;">
@@ -148,7 +148,7 @@
                         <h5 class="m-0 fw-semibold text-dark" id="page-title">Dashboard</h5>
                     </div>
                 </div>
-                <div class="d-flex align-items-center gap-3" style="cursor: pointer;" onclick="switchView('view-perfil', 'Mi Perfil de Usuario')">
+                <div class="d-flex align-items-center gap-3" style="cursor: default;">
                     <div class="text-end d-none d-sm-block">
                         <p class="m-0 small fw-bold text-dark" id="user-display-name">Cargando...</p>
                         <p class="m-0 text-muted" style="font-size: 0.75rem;" id="user-display-role">Operador de Archivo</p>
@@ -635,7 +635,7 @@
                 <div class="card p-3 p-md-4 border-0 shadow-sm mb-4">
                     <div class="text-center mb-4 pb-3 border-bottom">
                         <div class="d-flex justify-content-center align-items-center mb-2">
-                            <img src="https://ecomindsetgo.github.io/saamir/LOGO%20LPMD.png" alt="Logo LPMD" style="max-height: 70px; object-fit: contain;" id="img-logo-lpmd-render" loading="lazy" decoding="async" onerror="this.onerror=null; this.src='LOGO_PJ-AD.png';">
+                            <img src="LOGO_PJ-AD.png" alt="Logo LPMD" style="max-height: 70px; object-fit: contain;" id="img-logo-lpmd-render" loading="lazy" decoding="async" onerror="this.onerror=null; this.src='LOGO_PJ-AD.png';">
                         </div>
                         <h6 class="fw-bold text-dark m-0">CORTE SUPERIOR DE JUSTICIA DEL SANTA</h6>
                         <p class="text-muted small m-0">Archivo Desconcentrado - Línea de Producción de Microformas Digitales</p>
@@ -928,7 +928,7 @@
             </section>
 
             <!-- EDITAR PERFIL / CONFIGURACIÓN DE LA CUENTA -->
-            <section id="view-perfil" class="view-section">
+            <section id="view-perfil" class="view-section" hidden style="display:none!important">
                 <div class="row g-4">
                     <div class="col-12 col-md-6">
                         <div class="card p-3 p-md-4 border-0 shadow-sm">
@@ -952,7 +952,7 @@
                             <form id="form-perfil-clave">
                                 <div class="mb-3">
                                     <label class="form-label">Nueva Contraseña</label>
-                                    <input type="password" class="form-control" id="perf-new-password" required minlength="6" placeholder="Mínimo 6 caracteres">
+                                    <input type="password" class="form-control" id="perf-new-password" required minlength="8" placeholder="Mínimo 8 caracteres">
                                 </div>
                                 <div class="mb-3">
                                     <label class="form-label">Confirmar Nueva Contraseña</label>
