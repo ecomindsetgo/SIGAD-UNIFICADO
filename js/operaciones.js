@@ -5,7 +5,7 @@ import {getFirestore,collection,getDocs,addDoc,doc,runTransaction} from 'https:/
 // Compatible con la base Firestore que ya contiene los registros originales.
 // Las reglas de seguridad deben restringir todas las operaciones por rol.
 const config={apiKey:'AIzaSyDaVsm4cs9O-R0plj1hk62Iy1uU2IYZLfc',authDomain:'sipa-d4ec9.firebaseapp.com',projectId:'sipa-d4ec9',storageBucket:'sipa-d4ec9.firebasestorage.app',messagingSenderId:'560354492263',appId:'1:560354492263:web:653ac26f811153537c79c2'};
-const app=getApps().find(a=>a.name==='sigad-operaciones')||initializeApp(config,'sigad-operaciones');
+const app=getApps().find(a=>a.name==='[DEFAULT]')||initializeApp(config);
 const auth=getAuth(app),db=getFirestore(app);
 const $=id=>document.getElementById(id), esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const fecha=()=>new Date().toLocaleDateString('en-CA');
@@ -82,7 +82,7 @@ const feedback=$('sigad-login-feedback');
 loginForm.addEventListener('submit',async e=>{e.preventDefault();const button=loginForm.querySelector('button');button.disabled=true;feedback.textContent='Verificando credenciales…';try{await signInWithEmailAndPassword(auth,loginForm.elements.email.value.trim(),loginForm.elements.password.value);loginForm.reset();}catch(error){feedback.textContent='No se pudo iniciar sesión. Verifique su cuenta, contraseña y autorización.';}finally{button.disabled=false;}});
 $('sigad-global-logout').addEventListener('click',()=>signOut(auth));
 onAuthStateChanged(auth,user=>{document.body.classList.toggle('sigad-locked',!user);gate.hidden=!!user;if(user){window.dispatchEvent(new Event('sigad:sesion-activa'));document.querySelectorAll('.profile-name').forEach(el=>el.textContent=user.displayName||user.email||'Usuario SIGAD');feedback.textContent='';}else{records.clear();feedback.textContent='Inicie sesión para continuar.';}for(const id of Object.keys(modules)){const slot=rootFor(id);if(slot&&slot.closest('.view.active')){render(id);break}}});
-window.addEventListener('sigad:modulo',e=>render(e.detail));
+window.addEventListener('sigad:modulo',e=>{ if(!window.SIGADLegacyModuleViews?.includes(e.detail)) render(e.detail); });
 window.SIGADOperaciones={getStatus:()=>({autenticado:!!auth.currentUser,usuario:username()})};
 
 // Consulta transversal sin solicitar IDs de Firestore al personal.

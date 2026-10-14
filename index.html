@@ -25,6 +25,7 @@
   <script defer src="js/app.js"></script>
   <script defer src="js/dashboard.js"></script><script defer src="js/institutional-dashboard.js"></script>
   <script type="module" src="js/operaciones.js"></script>
+<link rel="stylesheet" href="assets/archivo-original.css">
 </head>
 <body><svg xmlns="http://www.w3.org/2000/svg" style="position:absolute;width:0;height:0;overflow:hidden" aria-hidden="true"><defs><filter id="logo-alpha" color-interpolation-filters="sRGB"><feColorMatrix in="SourceGraphic" type="luminanceToAlpha" result="light"/><feComponentTransfer in="light" result="mask"><feFuncA type="table" tableValues="1 0"/></feComponentTransfer><feComposite in="SourceGraphic" in2="mask" operator="in"/></filter></defs></svg>
 
@@ -172,15 +173,15 @@
       <article class="panel"><div class="panel-head"><div><h3>Historial de eliminación</h3><p>Cantidad de paquetes, metros lineales, fechas y repositorios.</p></div></div><div id="eliminationList"></div></article>
     </section>
 
-<section class="view" id="view-inventario"><div class="view-toolbar"><div><h2>Inventario y censo</h2><p>Módulo integrado de gestión documental SIGAD.</p></div></div><div class="integrated-slot" id="slot-inventario"></div></section>
-<section class="view" id="view-consultar-inventario"><div class="view-toolbar"><div><h2>Consultar inventarios</h2><p>Módulo integrado de gestión documental SIGAD.</p></div></div><div class="integrated-slot" id="slot-consultar-inventario"></div></section>
-<section class="view" id="view-reingresos"><div class="view-toolbar"><div><h2>Registrar reingresos</h2><p>Módulo integrado de gestión documental SIGAD.</p></div></div><div class="integrated-slot" id="slot-reingresos"></div></section>
-<section class="view" id="view-consultar-reingresos"><div class="view-toolbar"><div><h2>Consultar reingresos</h2><p>Módulo integrado de gestión documental SIGAD.</p></div></div><div class="integrated-slot" id="slot-consultar-reingresos"></div></section>
-<section class="view" id="view-traslados"><div class="view-toolbar"><div><h2>Registrar traslados</h2><p>Módulo integrado de gestión documental SIGAD.</p></div></div><div class="integrated-slot" id="slot-traslados"></div></section>
-<section class="view" id="view-consultar-traslados"><div class="view-toolbar"><div><h2>Consultar traslados</h2><p>Módulo integrado de gestión documental SIGAD.</p></div></div><div class="integrated-slot" id="slot-consultar-traslados"></div></section>
-<section class="view" id="view-tarjetas"><div class="view-toolbar"><div><h2>Generar tarjetas</h2><p>Módulo integrado de gestión documental SIGAD.</p></div></div><div class="integrated-slot" id="slot-tarjetas"></div></section>
-<section class="view" id="view-consultar-tarjetas"><div class="view-toolbar"><div><h2>Consultar tarjetas</h2><p>Módulo integrado de gestión documental SIGAD.</p></div></div><div class="integrated-slot" id="slot-consultar-tarjetas"></div></section>
-<section class="view" id="view-microformas"><div class="view-toolbar"><div><h2>Control de microformas</h2><p>Módulo integrado de gestión documental SIGAD.</p></div></div><div class="integrated-slot" id="slot-microformas"></div></section>
+<section class="view" id="view-inventario"><div class="archive-host" data-archive-view="inventario"><iframe title="Módulo de inventario" loading="lazy" class="archive-frame" allow="clipboard-write"></iframe></div></section>
+<section class="view" id="view-consultar-inventario"><div class="archive-host" data-archive-view="consultar-inventario"><iframe title="Módulo de consultar inventario" loading="lazy" class="archive-frame" allow="clipboard-write"></iframe></div></section>
+<section class="view" id="view-reingresos"><div class="archive-host" data-archive-view="reingresos"><iframe title="Módulo de reingresos" loading="lazy" class="archive-frame" allow="clipboard-write"></iframe></div></section>
+<section class="view" id="view-consultar-reingresos"><div class="archive-host" data-archive-view="consultar-reingresos"><iframe title="Módulo de consultar reingresos" loading="lazy" class="archive-frame" allow="clipboard-write"></iframe></div></section>
+<section class="view" id="view-traslados"><div class="archive-host" data-archive-view="traslados"><iframe title="Módulo de traslados" loading="lazy" class="archive-frame" allow="clipboard-write"></iframe></div></section>
+<section class="view" id="view-consultar-traslados"><div class="archive-host" data-archive-view="consultar-traslados"><iframe title="Módulo de consultar traslados" loading="lazy" class="archive-frame" allow="clipboard-write"></iframe></div></section>
+<section class="view" id="view-tarjetas"><div class="archive-host" data-archive-view="tarjetas"><iframe title="Módulo de tarjetas" loading="lazy" class="archive-frame" allow="clipboard-write"></iframe></div></section>
+<section class="view" id="view-consultar-tarjetas"><div class="archive-host" data-archive-view="consultar-tarjetas"><iframe title="Módulo de consultar tarjetas" loading="lazy" class="archive-frame" allow="clipboard-write"></iframe></div></section>
+<section class="view" id="view-microformas"><div class="archive-host" data-archive-view="microformas"><iframe title="Módulo de microformas" loading="lazy" class="archive-frame" allow="clipboard-write"></iframe></div></section>
     <section class="view" id="view-reportes">
       <div class="view-toolbar"><div><h2>Reportes</h2><p>Consolidados de gestión y exportación de datos.</p></div><div class="toolbar-actions"><button class="secondary" id="btnExportCsv">Exportar consolidado CSV</button><button class="primary" id="btnPrintReport">Imprimir reporte</button></div></div>
       <div id="reportContent"></div>
@@ -252,5 +253,5 @@
     <div class="notice"><strong>Firebase preparado, no activado.</strong><p>La versión incluye estructura de reglas y configuración de ejemplo. Para uso multiusuario se debe crear/configurar el proyecto Firebase de SIGAD y publicar sus reglas.</p></div>
   </div>
 </div>
-</body>
+<script src="js/archivo-original.js" defer></script></body>
 </html>

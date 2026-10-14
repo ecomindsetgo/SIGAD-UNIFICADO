@@ -1,0 +1,10 @@
+
+/* Unified host layout: keep all original operational markup, actions and validations */
+#sidebar,#sidebar-backdrop,.brand-mark,.brand-name,.brand-subtitle,.brand-version{display:none!important}
+#login-container{display:none!important}
+#app-container{width:100%!important; min-height:0!important; display:flex}
+#main-content{width:100%!important;margin:0!important;max-width:none!important;padding:12px 8px 32px!important;min-height:0!important}
+body{background:transparent!important;overflow-x:hidden!important}
+.view-section{max-width:none!important}
+#page-title{color:#97102e}
+@media(max-width:700px){#main-content{padding:10px 4px!important}.table-responsive{max-width:100%;overflow-x:auto}.modal-dialog{margin:8px!important;max-width:calc(100vw - 16px)!important}}

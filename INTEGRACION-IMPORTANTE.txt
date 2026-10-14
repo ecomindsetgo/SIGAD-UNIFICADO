@@ -1,0 +1,8 @@
+SIGAD v1.5 — recuperación de motor original
+
+Se incluye el código original COMPLETO de SAAMIR (app.js, tarjetas.js, styles.css, index.html, imágenes) sin reemplazar sus procedimientos por formularios abreviados.
+Las pantallas aparecen dentro del menú SIGAD con el motor operativo aislado en un marco interno (iframe de mismo origen). Este es un puente transitorio, NO una refactorización nativa de los componentes y NO garantiza funcionamiento al 100% sin pruebas reales.
+El usuario ingresa una sola vez en SIGAD; ambas aplicaciones utilizan Firebase Authentication del mismo proyecto/origen y comparten persistencia de sesión si el hosting es el mismo dominio.
+Para GitHub Pages coloque todos los archivos en el mismo sitio y ruta (nunca alojar el módulo en otro dominio). Su hosting estático necesita HTTPS y conexión a las dependencias CDN.
+IMPORTANTE: no se han verificado transacciones, permisos ni edición/eliminación en base real. No utilizar en producción sin copia de seguridad y pruebas.
+El dashboard histórico y módulos SIGAD no quedan reescritos. La consolidación definitiva de datos, eliminación de duplicidades y seguridad por roles siguen pendientes.
