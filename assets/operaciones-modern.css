@@ -11,3 +11,11 @@
 /* Only one activity chart and one repository distribution: institutional summary remains. */
 #view-dashboard .dashboard-grid>.activity-panel,#view-dashboard .dashboard-grid>.repository-panel{display:none!important}
 @media(max-width:900px){.ops-inventory-layout{grid-template-columns:minmax(0,1fr)}.ops-section-header{align-items:flex-start}.ops-range-entry{width:100%}}@media(max-width:600px){.integrated-slot .ops-section{padding:12px}.ops-range-entry input{width:100%}.ops-dialog-content{padding:15px}.integrated-slot .int-form-footer{display:flex;flex-wrap:wrap}.integrated-slot .ops-overview{padding:12px}}
+
+/* Contraste reforzado de botones y controles en modo oscuro SIGAD */
+body.dark-theme button.primary,body.dark-theme .primary,body.dark-theme button.danger,body.dark-theme button[type="submit"].primary{background:#ab1748!important;color:#fff!important;border-color:#c03d68!important;opacity:1}
+body.dark-theme button.secondary,body.dark-theme .secondary,body.dark-theme .toolbar-actions button:not(.primary),body.dark-theme .modal-card button:not(.primary),body.dark-theme .form-actions button:not(.primary),body.dark-theme .icon-tool,body.dark-theme .mini{background:#28364d!important;color:#f8fafc!important;border:1px solid #63738d!important;opacity:1}
+body.dark-theme button.secondary:hover,body.dark-theme .toolbar-actions button:hover{background:#344864!important}
+body.dark-theme button:disabled{opacity:.55!important;cursor:not-allowed}
+body.dark-theme .modal-card .modal-close,body.dark-theme .icon-control{color:#f8fafc!important}
+body.dark-theme .primary svg,body.dark-theme .secondary svg{color:inherit!important;stroke:currentColor!important}
