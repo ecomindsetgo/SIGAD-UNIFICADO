@@ -4,7 +4,7 @@ import {getFirestore,collection,doc,getDocs,writeBatch,setDoc,serverTimestamp} f
 const config={apiKey:'AIzaSyDaVsm4cs9O-R0plj1hk62Iy1uU2IYZLfc',authDomain:'sipa-d4ec9.firebaseapp.com',projectId:'sipa-d4ec9',storageBucket:'sipa-d4ec9.firebasestorage.app',messagingSenderId:'560354492263',appId:'1:560354492263:web:653ac26f811153537c79c2'};
 const app=getApps()[0]||initializeApp(config),auth=getAuth(app),db=getFirestore(app);
 const collections={sigad_offices_v2:'sigad_oficios',sigad_transfers_v2:'sigad_transferencias',sigad_eliminations_v2:'sigad_eliminaciones',sigad_ranges_v2:'sigad_ubicaciones',sigad_audit_v2:'sigad_auditoria'};
-let cache=new Map(),uid=null,loaded=false,loading=null,serial=Promise.resolve();
+let cache=new Map(),uid=null,loaded=false,loading=null,serial=Promise.resolve(),auditReadable=true;
 const copy=x=>structuredClone(x);
 function check(){if(!loaded||!uid||auth.currentUser?.uid!==uid)throw Error('Sesión sin datos institucionales disponibles');}
 async function load(){
@@ -12,8 +12,20 @@ async function load(){
  if(loading)return loading;
  loaded=false;uid=user.uid;cache.clear();
  loading=(async()=>{
+  auditReadable=true;
   for(const [key,col] of Object.entries(collections)){
-   const snaps=key==='sigad_audit_v2' && user.uid!=='MmniSKpNWPN2saVja2wVTPaiBnn2' ? {docs:[]} : await getDocs(collection(db,col));
+   if(key==='sigad_audit_v2' && user.uid!=='MmniSKpNWPN2saVja2wVTPaiBnn2'){cache.set(key,[]);continue;}
+   let snaps;
+   try{snaps=await getDocs(collection(db,col));}
+   catch(err){
+    if(key==='sigad_audit_v2'){
+     auditReadable=false;cache.set(key,[]);
+     console.warn('SIGAD: no se pudo leer Auditoría; los módulos documentales continuarán disponibles',err);
+     continue;
+    }
+    const error=new Error('No se pudo consultar '+col+' ('+(err.code||err.message)+'). Comprueba las reglas de acceso a esta colección.');
+    error.cause=err;throw error;
+   }
    if(auth.currentUser?.uid!==uid)throw Error('Cambió la sesión');
    cache.set(key,snaps.docs.map(d=>({...d.data(),id:d.id})).sort((a,b)=>String(b.createdAt||b.at||'').localeCompare(String(a.createdAt||a.at||''))));
   }
@@ -44,9 +56,9 @@ async function writeCollection(key,newList){
  cache.set(key,snaps.docs.map(d=>({...d.data(),id:d.id})));
  window.dispatchEvent(new Event('sigad:datos-cargados'));
 }
-function write(key,list){const task=serial.then(()=>writeCollection(key,copy(list)));serial=task.catch(()=>{});return task;}
+function write(key,list){const task=serial.then(async()=>{if(!loaded)await load();return writeCollection(key,copy(list));});serial=task.catch(()=>{});return task;}
 async function audit(event){
- check();const eventId=event.id||crypto.randomUUID();await setDoc(doc(db,collections.sigad_audit_v2,eventId),{...event,uid,fechaServidor:serverTimestamp()});
+ if(!loaded)await load();check();const eventId=event.id||crypto.randomUUID();await setDoc(doc(db,collections.sigad_audit_v2,eventId),{...event,uid,fechaServidor:serverTimestamp()});
  const list=cache.get('sigad_audit_v2')||[];cache.set('sigad_audit_v2',[{...event,id:eventId,uid},...list]);
 }
 onAuthStateChanged(auth,user=>{if(!user||user.uid!==uid){uid=null;loaded=false;cache.clear();}});
