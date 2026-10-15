@@ -19,3 +19,12 @@ body.dark-theme button.secondary:hover,body.dark-theme .toolbar-actions button:h
 body.dark-theme button:disabled{opacity:.55!important;cursor:not-allowed}
 body.dark-theme .modal-card .modal-close,body.dark-theme .icon-control{color:#f8fafc!important}
 body.dark-theme .primary svg,body.dark-theme .secondary svg{color:inherit!important;stroke:currentColor!important}
+
+/* SIGAD v3.4: contraste legible en TODOS los controles del tema oscuro */
+body.dark-theme .summary-cards>div,body.dark-theme .stats>div,body.dark-theme .summary-panel .summary-cards>div{background:#2b3850!important;border:1px solid #536681!important;color:#f8fafc!important}
+body.dark-theme .summary-cards span,body.dark-theme .summary-cards strong,body.dark-theme .stats strong{color:#f8fafc!important;opacity:1!important}
+body.dark-theme .row-actions button,body.dark-theme .history-actions button,body.dark-theme button.mini,body.dark-theme .a360-plan-actions button,body.dark-theme .modal button.secondary,body.dark-theme .summary-panel button.secondary,body.dark-theme .form-layout button.secondary,body.dark-theme .table-wrap button:not(.primary),body.dark-theme .toolbar-actions button.secondary,body.dark-theme .suggestions button{background:#293850!important;color:#fff!important;border:1px solid #75849b!important;opacity:1!important}
+body.dark-theme button.primary,body.dark-theme .form-actions button.primary,body.dark-theme .modal .primary{background:#b01449!important;color:#fff!important;border:1px solid #d2587b!important;opacity:1!important}
+body.dark-theme .row-actions button svg,body.dark-theme .history-actions button svg,body.dark-theme button.mini svg{color:#fff!important;stroke:currentColor!important}
+body.dark-theme .row-actions button:hover,body.dark-theme .history-actions button:hover,body.dark-theme button.mini:hover{background:#3d506c!important}
+body.dark-theme button:disabled{opacity:.58!important}
