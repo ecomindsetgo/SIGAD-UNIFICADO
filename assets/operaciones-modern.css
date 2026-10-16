@@ -81,3 +81,25 @@ body.dark-theme button:disabled{opacity:.58!important}
 #officePreview table tbody tr:last-child td{font-weight:700!important}
 #officePreview table tbody tr:last-child td[colspan]{background:#fff!important}
 #officePreview p{font-size:12px!important;text-indent:0!important}
+
+/* Oficio A4: proporciones compactas del modelo institucional */
+#officePreview.paper{box-sizing:border-box!important;width:794px!important;max-width:794px!important;min-height:1123px!important;padding:42px 65px 47px!important;font-size:12px!important;line-height:1.38!important;}
+#officePreview .doc-header{grid-template-columns:68px minmax(0,1fr) 68px!important;gap:6px!important;min-height:62px!important;padding-bottom:6px!important;margin-bottom:7px!important;}
+#officePreview .doc-header img{width:62px!important;max-width:62px!important;}
+#officePreview .doc-header-center h2{font-size:14px!important;line-height:1.15!important;}
+#officePreview .doc-header-center h3{font-size:14px!important;line-height:1.15!important;margin-top:3px!important;}
+#officePreview .doc-date{margin:5px 0 12px!important;font-size:11px!important;}
+#officePreview .doc-office-no{font-size:13px!important;margin:4px 0 11px!important;}
+#officePreview .doc-dr-block{line-height:1.27!important;margin-bottom:7px!important;}
+#officePreview .doc-dr-block div:nth-child(2){font-size:12px!important;}
+#officePreview .doc-dr-block div:nth-child(3){font-size:11px!important;}
+#officePreview .doc-meta{margin:3px 0 12px!important;}
+#officePreview p{font-size:12px!important;line-height:1.38!important;margin:9px 0!important;text-align:justify!important;}
+#officePreview table{width:94%!important;margin:8px auto 3px!important;table-layout:fixed!important;}
+#officePreview table th,#officePreview table td{font-size:10px!important;line-height:1.15!important;padding:3px 4px!important;overflow-wrap:normal!important;word-break:normal!important;}
+#officePreview table th:first-child,#officePreview table td:first-child{width:8%!important;white-space:nowrap!important;}
+#officePreview table th:nth-child(4):not(:last-child){white-space:nowrap!important;}
+#officePreview .doc-total{width:94%;margin:0 auto 12px;display:grid;grid-template-columns:65% 17.5% 17.5%;text-align:center;color:#000!important;font-weight:700;}
+#officePreview .doc-total span{text-align:right;padding-right:10px;}
+#officePreview .signature{margin-top:28px!important;}
+@media print{#officePreview.paper{width:auto!important;max-width:none!important;min-height:0!important;padding:11mm 16mm 12mm!important;}}
