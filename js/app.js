@@ -127,7 +127,7 @@ function previewHtml(r){
     : '';
   return `
   <div class="doc-header office-header">
-    <div class="office-logo-clip"><img src="assets/logo-pj.png" alt="Poder Judicial"></div>
+    <div class="office-logo-clip"><img src="assets/logo-pj-oficios.png" alt="Archivo Desconcentrado"></div>
     <div class="office-header-center">
       <div class="office-title">CORTE SUPERIOR DE JUSTICIA DEL SANTA</div>
       <div class="office-subtitle">ARCHIVO DESCONCENTRADO</div>
@@ -162,16 +162,194 @@ function previewHtml(r){
 };
 function showPreview(){const r=collectOffice();if(!r.number||!r.date||!r.recipient){alert('Complete número, fecha y destinatario.');return}if(!r.dependencies.length){alert('Registre al menos una dependencia.');return}$('#officePreview').innerHTML=previewHtml(r);openModal('previewModal')}
 $('#btnPreview').onclick=showPreview;$('#closePreview').onclick=()=>closeModal('previewModal');$('#btnPrint').onclick=()=>window.print();$('#btnFinalize').onclick=async()=>{const r=await saveOffice('generado');if(r){$('#officePreview').innerHTML=previewHtml(r);alert('Oficio registrado como generado.')}};
-async function loadLogoData(){const res=await fetch('assets/logo-pj.png');return await res.arrayBuffer()}
+async function loadLogoData(){const res=await fetch('assets/logo-pj-oficios.png');if(!res.ok)throw new Error('No se pudo cargar el logo del oficio');return await res.arrayBuffer()}
 function wRun(t,opt={}){if(typeof opt==='boolean')opt={bold:opt};const font=opt.font||'Arial',size=opt.size??22;return`<w:r><w:rPr><w:rFonts w:ascii="${font}" w:hAnsi="${font}" w:eastAsia="${font}" w:cs="${font}"/>${opt.bold?'<w:b/>':''}${opt.italic?'<w:i/>':''}${opt.underline?'<w:u w:val="single"/>':''}<w:color w:val="000000"/><w:sz w:val="${size}"/></w:rPr><w:t xml:space="preserve">${xml(t)}</w:t></w:r>`}
 function wP(t,opt={}){const align=opt.align?`<w:jc w:val="${opt.align}"/>`:'';const ind=opt.indentLeft?`<w:ind w:left="${opt.indentLeft}"/>`:'';return`<w:p><w:pPr><w:spacing w:after="${opt.after??120}"/>${align}${ind}</w:pPr>${wRun(t,opt)}</w:p>`}
-function wCell(t,opt={},width=2400){if(typeof opt==='boolean')opt={bold:opt};const align=opt.align||'center';const grid=opt.gridSpan?`<w:gridSpan w:val="${opt.gridSpan}"/>`:'';const noWrap=opt.noWrap?'<w:noWrap/>':'';return`<w:tc><w:tcPr><w:tcW w:w="${width}" w:type="dxa"/>${grid}${noWrap}<w:tcMar><w:top w:w="60" w:type="dxa"/><w:left w:w="60" w:type="dxa"/><w:bottom w:w="60" w:type="dxa"/><w:right w:w="60" w:type="dxa"/></w:tcMar></w:tcPr><w:p><w:pPr><w:jc w:val="${align}"/></w:pPr>${wRun(t,opt)}</w:p></w:tc>`}
-function wTable(headers,rows,widths,opt={}){const headerSize=opt.headerSize??18,bodySize=opt.bodySize??20;return`<w:tbl><w:tblPr><w:tblW w:w="0" w:type="auto"/><w:tblBorders><w:top w:val="single" w:sz="6" w:color="000000"/><w:left w:val="single" w:sz="6" w:color="000000"/><w:bottom w:val="single" w:sz="6" w:color="000000"/><w:right w:val="single" w:sz="6" w:color="000000"/><w:insideH w:val="single" w:sz="6" w:color="000000"/><w:insideV w:val="single" w:sz="6" w:color="000000"/></w:tblBorders></w:tblPr><w:tr>${headers.map((h,i)=>wCell(h,{bold:true,size:headerSize,noWrap:true},widths?.[i])).join('')}</w:tr>${rows.map(row=>`<w:tr>${row.map((c,i)=>typeof c==='object'?wCell(String(c.text??''),{bold:!!c.bold,italic:!!c.italic,underline:!!c.underline,size:c.size??bodySize,align:c.align||'center',gridSpan:c.gridSpan,noWrap:!!c.noWrap},c.width??widths?.[i]??2400):wCell(String(c??''),{size:bodySize},widths?.[i]??2400)).join('')}</w:tr>`).join('')}</w:tbl>`}
-function logoDrawing(){return`<w:p><w:pPr><w:jc w:val="left"/></w:pPr><w:r><w:drawing><wp:inline distT="0" distB="0" distL="0" distR="0"><wp:extent cx="780000" cy="780000"/><wp:docPr id="1" name="Logo PJ"/><a:graphic><a:graphicData uri="http://schemas.openxmlformats.org/drawingml/2006/picture"><pic:pic><pic:nvPicPr><pic:cNvPr id="0" name="logo.png"/><pic:cNvPicPr/></pic:nvPicPr><pic:blipFill><a:blip r:embed="rId1"/><a:stretch><a:fillRect/></a:stretch></pic:blipFill><pic:spPr><a:xfrm><a:off x="0" y="0"/><a:ext cx="780000" cy="780000"/></a:xfrm><a:prstGeom prst="rect"><a:avLst/></a:prstGeom></pic:spPr></pic:pic></a:graphicData></a:graphic></wp:inline></w:drawing></w:r></w:p>`}
-function officeDocXml(r){const tp=total(r,'packages'),tf=total(r,'files'),intro=`Tengo el agrado de dirigirme a Usted, para saludarlo cordialmente y en atención al documento anotado en la referencia, devolver a su despacho los ${r.cargoType==='digital'?'cargos en digital':'cargos'} de los Expedientes recepcionados por el Archivo Desconcentrado debidamente numerados${r.rangeStart||r.rangeEnd?` del ${r.rangeStart} AL ${r.rangeEnd}`:''} (${tp} PAQUETES), ${dependencyPhrase(r)}, según el siguiente detalle:`,depRows=r.dependencies.map((x,i)=>[i+1,x.name,x.packages,x.files]),obsRows=r.observations.map((x,i)=>[i+1,x.dep,x.file,x.folios,x.text||x.type]),pobRows=r.packageObservations.map((x,i)=>[i+1,x.dep,x.code,x.folios,x.text]);let body=logoDrawing()+wP('CORTE SUPERIOR DE JUSTICIA DEL SANTA',{bold:true,align:'center',size:25,after:20})+wP('ARCHIVO DESCONCENTRADO',{bold:true,align:'center',size:24,after:30})+wP('__________________________________________________________________________________',{align:'center',size:16,after:60})+wP(`Chimbote, ${longDate(r.date)}`,{align:'right',size:22,after:70})+wP(`OFICIO N.° ${r.number}`,{bold:true,underline:true,size:28,after:120})+wP('Dr.(a):',{bold:true,size:24,after:20})+wP(r.recipient,{bold:true,size:24,after:20})+wP(r.recipientRole,{italic:true,size:24,after:80});if(r.references.length){body+=wP('REFERENCIA:',{bold:true,size:22,after:20});r.references.forEach(x=>body+=wP(x,{size:22,after:0,indentLeft:720}))}if(r.referenceDate){body+=wP('FECHA:',{bold:true,size:22,after:20})+wP(fmtDate(r.referenceDate),{size:22,after:100,indentLeft:720})}body+=wP(intro,{align:'both',size:22})+wTable(['ITEM','JUZGADO / DEPENDENCIA','CANTIDAD PAQUETES','CANTIDAD EXPEDIENTES'],depRows,[700,4800,1600,1600],{headerSize:18,bodySize:20})+wP(`TOTAL                    ${tp}                    ${tf}`,{bold:true,align:'right',size:20,after:90})+wP(`Para futuros requerimientos de expedientes al Archivo Desconcentrado, deberá consignarse en el oficio correspondiente la numeración del paquete asignado por esta oficina.${r.observations.length||r.packageObservations.length?` Asimismo, se ${r.observations.length+r.packageObservations.length===1?'devuelve':'devuelven'} ${[r.observations.length?`${r.observations.length} expediente${r.observations.length===1?'':'s'}`:'',r.packageObservations.length?`${r.packageObservations.length} paquete${r.packageObservations.length===1?'':'s'}`:''].filter(Boolean).join(' y ')} ${r.observations.length+r.packageObservations.length===1?'observado':'observados'}, cuyas observaciones se detallan a continuación:`:''}`,{align:'both',size:22});if(obsRows.length)body+=wTable(['ITEM','DEPENDENCIA','NRO EXPEDIENTE','FOLIOS','OBSERVACIONES'],obsRows,[700,2100,2500,900,2900],{headerSize:18,bodySize:18});if(pobRows.length)body+=wTable(['ITEM','DEPENDENCIA','CÓDIGO DE PAQUETE','FOLIOS','OBSERVACIONES'],pobRows,[700,2100,2500,900,2900],{headerSize:18,bodySize:18});if(exhortation(r))body+=wP(exhortation(r),{align:'both',size:22});body+=wP('Sin otro particular, hago propicia la oportunidad para expresarle los sentimientos de mi especial consideración y estima personal.',{align:'both',size:22})+wP('Atentamente;',{bold:true,italic:true,align:'center',size:22,after:160})+wP('FIRMADO DIGITALMENTE POR:',{bold:true,align:'center',size:22,after:1050})+wP('_____________________________',{align:'center',size:22,after:40})+wP('Responsable',{bold:true,align:'center',size:22,after:0})+wP('Archivo Desconcentrado',{bold:true,align:'center',size:22});return`<?xml version="1.0" encoding="UTF-8" standalone="yes"?><w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" xmlns:wp="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing" xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" xmlns:pic="http://schemas.openxmlformats.org/drawingml/2006/picture"><w:body>${body}<w:sectPr><w:pgSz w:w="11906" w:h="16838"/><w:pgMar w:top="850" w:right="1100" w:bottom="850" w:left="1100" w:header="400" w:footer="400"/></w:sectPr></w:body></w:document>`}
+function wCell(t,opt={},width=2400){if(typeof opt==='boolean')opt={bold:opt};const align=opt.align||'center';const grid=opt.gridSpan?`<w:gridSpan w:val="${opt.gridSpan}"/>`:'';const noWrap=opt.noWrap?'<w:noWrap/>':'';const noBorder=opt.noBorder?'<w:tcBorders><w:top w:val="nil"/><w:bottom w:val="nil"/><w:left w:val="nil"/><w:right w:val="nil"/></w:tcBorders>':'';return`<w:tc><w:tcPr><w:tcW w:w="${width}" w:type="dxa"/>${grid}${noWrap}${noBorder}<w:tcMar><w:top w:w="60" w:type="dxa"/><w:left w:w="60" w:type="dxa"/><w:bottom w:w="60" w:type="dxa"/><w:right w:w="60" w:type="dxa"/></w:tcMar></w:tcPr><w:p><w:pPr><w:jc w:val="${align}"/></w:pPr>${wRun(t,opt)}</w:p></w:tc>`}
+function wTable(headers,rows,widths,opt={}){const headerSize=opt.headerSize??18,bodySize=opt.bodySize??20;const tableUnits=(widths||[]).reduce((a,b)=>a+Number(b||0),0);return`<w:tbl><w:tblPr><w:tblW w:w="${tableUnits||8900}" w:type="dxa"/><w:jc w:val="center"/><w:tblBorders><w:top w:val="single" w:sz="6" w:color="000000"/><w:left w:val="single" w:sz="6" w:color="000000"/><w:bottom w:val="single" w:sz="6" w:color="000000"/><w:right w:val="single" w:sz="6" w:color="000000"/><w:insideH w:val="single" w:sz="6" w:color="000000"/><w:insideV w:val="single" w:sz="6" w:color="000000"/></w:tblBorders></w:tblPr><w:tr>${headers.map((h,i)=>wCell(h,{bold:true,size:headerSize,noWrap:true},widths?.[i])).join('')}</w:tr>${rows.map(row=>`<w:tr>${row.map((c,i)=>typeof c==='object'?wCell(String(c.text??''),{bold:!!c.bold,italic:!!c.italic,underline:!!c.underline,size:c.size??bodySize,align:c.align||'center',gridSpan:c.gridSpan,noWrap:!!c.noWrap,noBorder:!!c.noBorder},c.width??widths?.[i]??2400):wCell(String(c??''),{size:bodySize},widths?.[i]??2400)).join('')}</w:tr>`).join('')}</w:tbl>`}
+function logoDrawing(){return`<w:p><w:pPr><w:jc w:val="left"/></w:pPr><w:r><w:drawing><wp:inline distT="0" distB="0" distL="0" distR="0"><wp:extent cx="920000" cy="611000"/><wp:docPr id="1" name="Logo PJ"/><a:graphic><a:graphicData uri="http://schemas.openxmlformats.org/drawingml/2006/picture"><pic:pic><pic:nvPicPr><pic:cNvPr id="0" name="logo.png"/><pic:cNvPicPr/></pic:nvPicPr><pic:blipFill><a:blip r:embed="rId1"/><a:stretch><a:fillRect/></a:stretch></pic:blipFill><pic:spPr><a:xfrm><a:off x="0" y="0"/><a:ext cx="920000" cy="611000"/></a:xfrm><a:prstGeom prst="rect"><a:avLst/></a:prstGeom></pic:spPr></pic:pic></a:graphicData></a:graphic></wp:inline></w:drawing></w:r></w:p>`}
+function wordOfficeHeader(){
+  const logo=logoDrawing();
+  const center=`${wP('CORTE SUPERIOR DE JUSTICIA DEL SANTA',{bold:true,align:'center',size:25,after:25})}${wP('ARCHIVO DESCONCENTRADO',{align:'center',size:23,after:15})}`;
+  return `<w:tbl><w:tblPr><w:tblW w:w="8900" w:type="dxa"/><w:jc w:val="center"/><w:tblBorders><w:top w:val="nil"/><w:left w:val="nil"/><w:bottom w:val="nil"/><w:right w:val="nil"/><w:insideH w:val="nil"/><w:insideV w:val="nil"/></w:tblBorders></w:tblPr><w:tblGrid><w:gridCol w:w="1450"/><w:gridCol w:w="7450"/></w:tblGrid><w:tr><w:tc><w:tcPr><w:tcW w:w="1450" w:type="dxa"/></w:tcPr>${logo}</w:tc><w:tc><w:tcPr><w:tcW w:w="7450" w:type="dxa"/></w:tcPr>${center}</w:tc></w:tr></w:tbl>`+
+    `<w:p><w:pPr><w:pBdr><w:bottom w:val="single" w:sz="6" w:color="000000"/></w:pBdr><w:spacing w:after="60"/></w:pPr></w:p>`;
+}
+function wordOfficeField(label,value){
+  return `<w:p><w:pPr><w:spacing w:after="35"/></w:pPr>${wRun(label,{bold:true,size:19})}${wRun('    '+String(value||''),{size:19})}</w:p>`;
+}
+function officeDocXml(r){
+  const tp=total(r,'packages'),tf=total(r,'files');
+  const intro=`Tengo el agrado de dirigirme a Usted, para saludarlo cordialmente y en atención al documento anotado en la referencia, devolver a su despacho los ${r.cargoType==='digital'?'cargos en digital':'cargos'} de los Expedientes recepcionados por el Archivo Desconcentrado debidamente numerados${r.rangeStart||r.rangeEnd?` del ${r.rangeStart} al ${r.rangeEnd}`:''} (${tp} paquete${tp===1?'':'s'}), ${dependencyPhrase(r)}, según el siguiente detalle:`;
+  const depRows=(r.dependencies||[]).map((x,i)=>[i+1,x.name,x.packages,x.files]);
+  depRows.push([{text:'',noBorder:true},{text:'TOTAL',noBorder:true,bold:true,align:'right'},{text:tp,noBorder:true,bold:true},{text:tf,noBorder:true,bold:true}]);
+  const obsRows=(r.observations||[]).map((x,i)=>[i+1,x.dep,x.file,x.folios,x.text||x.type]);
+  const pobRows=(r.packageObservations||[]).map((x,i)=>[i+1,x.dep,x.code,x.folios,x.text]);
+  let body=wordOfficeHeader();
+  body+=wP(`Chimbote, ${longDate(r.date)}`,{align:'right',size:19,after:100});
+  body+=wP(`OFICIO N.° ${r.number}`,{bold:true,underline:true,size:23,after:95});
+  body+=wP('Dr.(a):',{bold:true,size:20,after:10});
+  body+=wP(r.recipient,{bold:true,size:20,after:10});
+  body+=wP(r.recipientRole,{italic:true,size:19,after:50});
+  if((r.references||[]).length){
+    r.references.forEach((ref,i)=>body+=wordOfficeField(i?'':'REFERENCIA:',ref));
+  }
+  if(r.referenceDate)body+=wordOfficeField('FECHA:',fmtDate(r.referenceDate));
+  body+=wP(intro,{align:'both',size:19,after:70});
+  body+=wTable(['ITEM','JUZGADO / DEPENDENCIA','CANTIDAD PAQUETES','CANTIDAD EXPEDIENTES'],depRows,[650,4450,1800,2000],{headerSize:17,bodySize:17});
+  body+=wP('Para futuros requerimientos de expedientes al Archivo Desconcentrado, deberá consignarse en el oficio correspondiente la numeración del paquete asignado por esta oficina.',{align:'both',size:19,after:70});
+  const obs=(r.observations||[]).length,pob=(r.packageObservations||[]).length;
+  if(obs||pob){
+    body+=wP(`Asimismo, se ${obs+pob===1?'devuelve':'devuelven'} ${[obs?`${obs} expediente${obs===1?'':'s'}`:'',pob?`${pob} paquete${pob===1?'':'s'}`:''].filter(Boolean).join(' y ')} ${obs+pob===1?'observado':'observados'}, cuyas observaciones se detallan a continuación:`,{align:'both',size:19,after:65});
+  }
+  if(obsRows.length)body+=wTable(['ITEM','DEPENDENCIA','NRO EXPEDIENTE','FOLIOS','OBSERVACIONES'],obsRows,[650,2100,2200,800,3150],{headerSize:16,bodySize:17});
+  if(pobRows.length)body+=wTable(['ITEM','DEPENDENCIA','CÓDIGO DE PAQUETE','FOLIOS','OBSERVACIONES'],pobRows,[650,2100,2200,800,3150],{headerSize:16,bodySize:17});
+  const ex=exhortation(r);
+  if(ex)body+=wP(ex,{align:'both',size:19,after:85});
+  body+=wP('Sin otro particular, hago propicia la oportunidad para expresarle los sentimientos de mi especial consideración y estima personal.',{align:'both',size:19,after:110});
+  body+=wP('Atentamente;',{bold:true,italic:true,align:'center',size:19,after:160});
+  body+=wP('FIRMADO DIGITALMENTE POR:',{bold:true,align:'center',size:19,after:680});
+  body+=wP('_____________________________',{align:'center',size:19,after:20});
+  body+=wP('Responsable',{bold:true,align:'center',size:19,after:0});
+  body+=wP('Archivo Desconcentrado',{bold:true,align:'center',size:19,after:0});
+  return `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" xmlns:wp="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing" xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" xmlns:pic="http://schemas.openxmlformats.org/drawingml/2006/picture"><w:body>${body}<w:sectPr><w:pgSz w:w="11906" w:h="16838"/><w:pgMar w:top="650" w:right="1350" w:bottom="650" w:left="1350" w:header="350" w:footer="350"/></w:sectPr></w:body></w:document>`;
+}
+
 async function generateDocx(){if(!window.JSZip){alert('No se cargó el componente para Word. Verifique la conexión a Internet.');return}const r=collectOffice(),zip=new JSZip();zip.file('[Content_Types].xml','<?xml version="1.0" encoding="UTF-8"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Default Extension="png" ContentType="image/png"/><Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/></Types>');zip.folder('_rels').file('.rels','<?xml version="1.0" encoding="UTF-8"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="word/document.xml"/></Relationships>');const word=zip.folder('word');word.file('document.xml',officeDocXml(r));word.folder('_rels').file('document.xml.rels','<?xml version="1.0" encoding="UTF-8"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/image" Target="media/logo.png"/></Relationships>');try{word.folder('media').file('logo.png',await loadLogoData())}catch{}const blob=await zip.generateAsync({type:'blob',mimeType:'application/vnd.openxmlformats-officedocument.wordprocessingml.document'});download(`Oficio_${r.number.replace(/[^a-z0-9-]/gi,'_')}.docx`,blob);log('Word generado',r.number)}
 $('#btnWord').onclick=generateDocx;
-async function generatePdf(){if(!window.jspdf?.jsPDF){alert('No se cargó el componente PDF. Verifique la conexión a Internet.');return}const r=collectOffice(),{jsPDF}=window.jspdf,doc=new jsPDF({unit:'mm',format:'a4'}),margin=16,pageW=210;doc.setTextColor(0,0,0);doc.setDrawColor(0,0,0);let y=15;try{const img=new Image();img.src='assets/logo-pj.png';await img.decode();doc.addImage(img,'PNG',margin,y,18,18)}catch{}doc.setFont('helvetica','bold');doc.setFontSize(12);doc.text('CORTE SUPERIOR DE JUSTICIA DEL SANTA',pageW/2,y+7,{align:'center'});doc.setFontSize(12);doc.text('ARCHIVO DESCONCENTRADO',pageW/2,y+15,{align:'center'});doc.line(margin,y+20,pageW-margin,y+20);y+=27;doc.setFont('helvetica','normal');doc.setFontSize(10);doc.text(`Chimbote, ${longDate(r.date)}`,pageW-margin,y,{align:'right'});y+=10;doc.setFont('helvetica','bold');doc.setFontSize(11);const oficioTxt=`OFICIO N.° ${r.number}`;doc.text(oficioTxt,margin,y);const oficioW=doc.getTextWidth(oficioTxt);doc.line(margin,y+1.3,margin+oficioW,y+1.3);y+=8;doc.text('Dr.(a):',margin,y);y+=6;doc.text(r.recipient,margin,y);y+=5.5;doc.setFont('helvetica','italic');doc.text(r.recipientRole,margin,y);doc.setFont('helvetica','normal');y+=7;if(r.references.length){doc.setFont('helvetica','bold');doc.text('REFERENCIA:',margin,y);doc.setFont('helvetica','normal');const refLines=r.references.flatMap(x=>doc.splitTextToSize(x,pageW-52-margin));doc.text(refLines,42,y);y+=Math.max(5,refLines.length*4.5)}if(r.referenceDate){doc.setFont('helvetica','bold');doc.text('FECHA:',margin,y);doc.setFont('helvetica','normal');doc.text(fmtDate(r.referenceDate),42,y);y+=7}const intro=`Tengo el agrado de dirigirme a Usted, para saludarlo cordialmente y en atención al documento anotado en la referencia, devolver a su despacho los ${r.cargoType==='digital'?'cargos en digital':'cargos'} de los Expedientes recepcionados por el Archivo Desconcentrado debidamente numerados${r.rangeStart||r.rangeEnd?` del ${r.rangeStart} AL ${r.rangeEnd}`:''} (${total(r,'packages')} PAQUETES), ${dependencyPhrase(r)}, según el siguiente detalle:`;doc.setFontSize(10);const introLines=doc.splitTextToSize(intro,pageW-margin*2);doc.text(introLines,margin,y,{align:'justify',maxWidth:pageW-margin*2});y+=introLines.length*4+3;doc.autoTable({startY:y,margin:{left:margin,right:margin},head:[['ITEM','JUZGADO / DEPENDENCIA','CANTIDAD PAQUETES','CANTIDAD EXPEDIENTES']],body:r.dependencies.map((x,i)=>[i+1,x.name,x.packages,x.files]),styles:{fontSize:7.3,cellPadding:1.6,lineColor:[0,0,0],lineWidth:.18,textColor:[0,0,0],halign:'center',valign:'middle',fillColor:[255,255,255]},headStyles:{fillColor:[255,255,255],textColor:[0,0,0],fontStyle:'bold',halign:'center'},bodyStyles:{textColor:[0,0,0],halign:'center',valign:'middle'},columnStyles:{0:{cellWidth:12},1:{cellWidth:79},2:{cellWidth:39},3:{cellWidth:39}},theme:'grid'});y=doc.lastAutoTable.finalY+3;doc.setFont('helvetica','bold');doc.setFontSize(8);doc.text('TOTAL',margin+98,y);doc.text(String(total(r,'packages')),margin+128,y,{align:'center'});doc.text(String(total(r,'files')),margin+165,y,{align:'center'});doc.setFont('helvetica','normal');doc.setFontSize(9);y+=6;const obsIntro=`Para futuros requerimientos de expedientes al Archivo Desconcentrado, deberá consignarse en el oficio correspondiente la numeración del paquete asignado por esta oficina.${r.observations.length||r.packageObservations.length?` Asimismo, se ${r.observations.length+r.packageObservations.length===1?'devuelve':'devuelven'} ${[r.observations.length?`${r.observations.length} expediente${r.observations.length===1?'':'s'}`:'',r.packageObservations.length?`${r.packageObservations.length} paquete${r.packageObservations.length===1?'':'s'}`:''].filter(Boolean).join(' y ')} ${r.observations.length+r.packageObservations.length===1?'observado':'observados'}, cuyas observaciones se detallan a continuación:`:''}`;const lines=doc.splitTextToSize(obsIntro,pageW-margin*2);doc.text(lines,margin,y,{align:'justify',maxWidth:pageW-margin*2});y+=lines.length*4+3;if(r.observations.length){doc.autoTable({startY:y,margin:{left:margin,right:margin},head:[['ITEM','DEPENDENCIA','NRO EXPEDIENTE','FOLIOS','OBSERVACIONES']],body:r.observations.map((x,i)=>[i+1,x.dep,x.file,x.folios,x.text||x.type]),styles:{fontSize:6.6,cellPadding:1.2,lineColor:[0,0,0],lineWidth:.14,textColor:[0,0,0],halign:'center',valign:'middle',fillColor:[255,255,255]},headStyles:{fillColor:[255,255,255],textColor:[0,0,0],fontStyle:'bold',halign:'center'},bodyStyles:{textColor:[0,0,0],halign:'center',valign:'middle'},columnStyles:{0:{cellWidth:12},1:{cellWidth:34},2:{cellWidth:44},3:{cellWidth:15},4:{cellWidth:58}},theme:'grid'});y=doc.lastAutoTable.finalY+4}if(r.packageObservations.length){doc.autoTable({startY:y,margin:{left:margin,right:margin},head:[['ITEM','DEPENDENCIA','CÓDIGO DE PAQUETE','FOLIOS','OBSERVACIONES']],body:r.packageObservations.map((x,i)=>[i+1,x.dep,x.code,x.folios,x.text]),styles:{fontSize:6.6,cellPadding:1.2,lineColor:[0,0,0],lineWidth:.14,textColor:[0,0,0],halign:'center',valign:'middle',fillColor:[255,255,255]},headStyles:{fillColor:[255,255,255],textColor:[0,0,0],fontStyle:'bold',halign:'center'},bodyStyles:{textColor:[0,0,0],halign:'center',valign:'middle'},columnStyles:{0:{cellWidth:12},1:{cellWidth:34},2:{cellWidth:44},3:{cellWidth:15},4:{cellWidth:58}},theme:'grid'});y=doc.lastAutoTable.finalY+4}function ensure(h){if(y+h>278){doc.addPage();y=18}}if(exhortation(r)){const l=doc.splitTextToSize(exhortation(r),pageW-margin*2);ensure(l.length*4+8);doc.text(l,margin,y,{align:'justify',maxWidth:pageW-margin*2});y+=l.length*4+5}const close=doc.splitTextToSize('Sin otro particular, hago propicia la oportunidad para expresarle los sentimientos de mi especial consideración y estima personal.',pageW-margin*2);ensure(close.length*4+68);doc.text(close,margin,y,{align:'justify',maxWidth:pageW-margin*2});y+=close.length*4+10;doc.setFont('helvetica','bolditalic');doc.text('Atentamente;',pageW/2,y,{align:'center'});y+=11;doc.setFont('helvetica','bold');doc.text('FIRMADO DIGITALMENTE POR:',pageW/2,y,{align:'center'});y+=24;doc.line(70,y,140,y);y+=5;doc.text('Responsable',pageW/2,y,{align:'center'});y+=5;doc.text('Archivo Desconcentrado',pageW/2,y,{align:'center'});doc.save(`Oficio_${r.number.replace(/[^a-z0-9-]/gi,'_')}.pdf`);log('PDF generado',r.number)}
+async function generatePdf(){
+  if(!window.jspdf?.jsPDF || typeof window.jspdf.jsPDF !== 'function'){
+    alert('No se cargó el componente PDF. Verifique la conexión a Internet.');return;
+  }
+  const r=collectOffice(),{jsPDF}=window.jspdf;
+  const doc=new jsPDF({unit:'mm',format:'a4'});
+  const pageW=210, pageH=297, left=23, right=23, width=pageW-left-right;
+  const tableWidth=156, tableLeft=(pageW-tableWidth)/2;
+  const bottom=14, nextTop=17;
+  const black=[0,0,0],white=[255,255,255];
+  let y=12;
+  doc.setTextColor(...black);doc.setDrawColor(...black);
+  function newPage(){doc.addPage();y=nextTop;}
+  function ensureHeight(h){if(y+h>pageH-bottom)newPage();}
+  function printParagraph(text,{fontSize=9.3,gap=3.2}={}){
+    doc.setFont('helvetica','normal');doc.setFontSize(fontSize);
+    const lines=doc.splitTextToSize(String(text||''),width);
+    const lineHeight=fontSize*0.352778*1.25;
+    let at=0;
+    while(at<lines.length){
+      let count=Math.floor((pageH-bottom-y)/lineHeight);
+      if(count<=0){newPage();count=Math.floor((pageH-bottom-y)/lineHeight);}
+      const chunk=lines.slice(at,at+count);
+      doc.text(chunk,left,y,{align:chunk.length>1?'justify':'left',maxWidth:width,lineHeightFactor:1.25});
+      y+=chunk.length*lineHeight;at+=chunk.length;
+      if(at<lines.length)newPage();
+    }
+    y+=gap;
+  }
+  try{
+    const img=new Image();img.src='assets/logo-pj-oficios.png';await img.decode();
+    doc.addImage(img,'PNG',24,10,27,17.9);
+  }catch(err){console.warn('SIGAD: logo de oficio no disponible',err);}
+  doc.setFont('helvetica','bold');doc.setFontSize(13.4);
+  doc.text('CORTE SUPERIOR DE JUSTICIA DEL SANTA',118,17,{align:'center'});
+  doc.setFont('helvetica','normal');doc.setFontSize(12.2);
+  doc.text('ARCHIVO DESCONCENTRADO',118,23.2,{align:'center'});
+  doc.setLineWidth(.22);doc.line(left,29,pageW-right,29);
+  y=36;
+  doc.setFont('helvetica','normal');doc.setFontSize(9.5);
+  doc.text(`Chimbote, ${longDate(r.date)}`,pageW-right,y,{align:'right'});
+  y+=8;
+  doc.setFont('helvetica','bold');doc.setFontSize(11.5);
+  const titulo=`OFICIO N.° ${r.number}`;doc.text(titulo,left,y);
+  doc.setLineWidth(.23);doc.line(left,y+.9,left+doc.getTextWidth(titulo),y+.9);
+  y+=6.4;
+  doc.setFont('helvetica','bold');doc.setFontSize(10.3);
+  doc.text('Dr.(a):',left,y);y+=5.1;
+  doc.text(String(r.recipient||''),left,y);y+=4.7;
+  doc.setFont('helvetica','italic');doc.setFontSize(9.8);
+  const roles=doc.splitTextToSize(String(r.recipientRole||''),width);
+  doc.text(roles,left,y,{lineHeightFactor:1.15});y+=roles.length*4.0+2.7;
+  const refX=49;
+  if((r.references||[]).length){
+    doc.setFont('helvetica','bold');doc.setFontSize(9.3);
+    doc.text('REFERENCIA:',left,y);
+    doc.setFont('helvetica','normal');
+    const refs=r.references.flatMap(x=>doc.splitTextToSize(String(x),pageW-right-refX));
+    doc.text(refs,refX,y,{lineHeightFactor:1.1});y+=Math.max(5,refs.length*4.0);
+  }
+  if(r.referenceDate){
+    doc.setFont('helvetica','bold');doc.text('FECHA:',left,y);
+    doc.setFont('helvetica','normal');doc.text(fmtDate(r.referenceDate),refX,y);y+=6;
+  }
+  y+=2;
+  const tp=total(r,'packages'),tf=total(r,'files');
+  const intro=`Tengo el agrado de dirigirme a Usted, para saludarlo cordialmente y en atención al documento anotado en la referencia, devolver a su despacho los ${r.cargoType==='digital'?'cargos en digital':'cargos'} de los Expedientes recepcionados por el Archivo Desconcentrado debidamente numerados${r.rangeStart||r.rangeEnd?` del ${r.rangeStart} al ${r.rangeEnd}`:''} (${tp} paquete${tp===1?'':'s'}), ${dependencyPhrase(r)}, según el siguiente detalle:`;
+  printParagraph(intro,{gap:2.7});
+  const tableCommon={
+    theme:'grid',tableWidth,margin:{left:tableLeft,right:tableLeft,top:nextTop,bottom},
+    pageBreak:'auto',rowPageBreak:'avoid',
+    styles:{font:'helvetica',fontSize:7.4,cellPadding:1.25,lineWidth:.16,lineColor:black,
+      fillColor:white,textColor:black,halign:'center',valign:'middle',fontStyle:'normal',overflow:'linebreak'},
+    headStyles:{fillColor:white,textColor:black,fontStyle:'bold',halign:'center',valign:'middle',lineColor:black,lineWidth:.16},
+    bodyStyles:{fillColor:white,textColor:black,fontStyle:'normal'},
+    alternateRowStyles:{fillColor:white}
+  };
+  const depRows=(r.dependencies||[]).map((x,i)=>[i+1,x.name,x.packages,x.files]);
+  doc.autoTable({
+    ...tableCommon,startY:y,
+    head:[['ITEM','JUZGADO / DEPENDENCIA','CANTIDAD\nPAQUETES','CANTIDAD\nEXPEDIENTES']],
+    body:depRows,
+    foot:[[
+      {content:'TOTAL',colSpan:2,styles:{halign:'right',fontStyle:'bold'}},
+      {content:String(tp),styles:{halign:'center',fontStyle:'bold'}},
+      {content:String(tf),styles:{halign:'center',fontStyle:'bold'}}
+    ]],
+    showFoot:'lastPage',
+    footStyles:{fillColor:white,textColor:black,fontStyle:'bold',lineWidth:0,cellPadding:{top:1.2,right:1.2,bottom:1.2,left:1.2}},
+    columnStyles:{0:{cellWidth:11},1:{cellWidth:75},2:{cellWidth:34},3:{cellWidth:36}},
+  });
+  y=doc.lastAutoTable.finalY+4.5;
+  printParagraph('Para futuros requerimientos de expedientes al Archivo Desconcentrado, deberá consignarse en el oficio correspondiente la numeración del paquete asignado por esta oficina.',{gap:2.7});
+  const obN=(r.observations||[]).length,pkN=(r.packageObservations||[]).length;
+  if(obN||pkN){
+    const obsIntro=`Asimismo, se ${obN+pkN===1?'devuelve':'devuelven'} ${[obN?`${obN} expediente${obN===1?'':'s'}`:'',pkN?`${pkN} paquete${pkN===1?'':'s'}`:''].filter(Boolean).join(' y ')} ${obN+pkN===1?'observado':'observados'}, cuyas observaciones se detallan a continuación:`;
+    printParagraph(obsIntro,{gap:2});
+  }
+  const obsColumns={0:{cellWidth:10},1:{cellWidth:36},2:{cellWidth:37},3:{cellWidth:13},4:{cellWidth:60}};
+  if(obN){
+    doc.autoTable({...tableCommon,startY:y,
+      head:[['ITEM','DEPENDENCIA','NRO EXPEDIENTE','FOLIOS','OBSERVACIONES']],
+      body:r.observations.map((x,i)=>[i+1,x.dep,x.file,x.folios,x.text||x.type]),
+      columnStyles:obsColumns,
+      styles:{...tableCommon.styles,fontSize:7.2,cellPadding:1.15}
+    });
+    y=doc.lastAutoTable.finalY+3;
+  }
+  if(pkN){
+    doc.autoTable({...tableCommon,startY:y,
+      head:[['ITEM','DEPENDENCIA','CÓDIGO DE PAQUETE','FOLIOS','OBSERVACIONES']],
+      body:r.packageObservations.map((x,i)=>[i+1,x.dep,x.code,x.folios,x.text]),
+      columnStyles:obsColumns,
+      styles:{...tableCommon.styles,fontSize:7.2,cellPadding:1.15}
+    });
+    y=doc.lastAutoTable.finalY+3;
+  }
+  const ex=exhortation(r);
+  if(ex)printParagraph(ex,{fontSize:9.1,gap:3});
+  printParagraph('Sin otro particular, hago propicia la oportunidad para expresarle los sentimientos de mi especial consideración y estima personal.',{fontSize:9.2,gap:5});
+  // La firma queda íntegra en una página; si el contenido crece se utiliza otra hoja.
+  ensureHeight(37);
+  doc.setFont('helvetica','bolditalic');doc.setFontSize(9.7);
+  doc.text('Atentamente;',pageW/2,y,{align:'center'});y+=8;
+  doc.setFont('helvetica','bold');doc.setFontSize(9.1);
+  doc.text('FIRMADO DIGITALMENTE POR:',pageW/2,y,{align:'center'});
+  y+=15;
+  doc.setLineWidth(.2);doc.line(75,y,135,y);y+=4.3;
+  doc.text('Responsable',pageW/2,y,{align:'center'});y+=4.1;
+  doc.text('Archivo Desconcentrado',pageW/2,y,{align:'center'});
+  doc.save(`Oficio_${String(r.number||'').replace(/[^a-z0-9-]/gi,'_')}.pdf`);
+  log('PDF generado',r.number);
+}
+
 $('#btnPdf').onclick=generatePdf;
 function loadOffice(id){const r=read(K.offices).find(x=>x.id===id);if(!r)return;currentOfficeId=r.id;$('#officeNumber').value=r.number||'';$('#officeDate').value=r.date||'';$('#recipient').value=r.recipient||'';$('#recipientRole').value=r.recipientRole||'';$('#references').value=(r.references||[]).join('\n');$('#referenceDate').value=r.referenceDate||'';$('#cargoType').value=r.cargoType||'digital';$('#rangeStart').value=r.rangeStart||'';$('#rangeEnd').value=r.rangeEnd||'';$('#dependencyRows').innerHTML='';(r.dependencies||[]).forEach(x=>$('#dependencyRows').append(depRow(x)));$('#observationRows').innerHTML='';(r.observations||[]).forEach(x=>$('#observationRows').append(obsRow(x)));$('#packageObservationRows').innerHTML='';(r.packageObservations||[]).forEach(x=>$('#packageObservationRows').append(packObsRow(x)));if(!r.dependencies?.length)$('#dependencyRows').append(depRow());reindex();sincronizarPaquetesDelRango();$('#historyPanel').classList.add('hidden');navigate('devoluciones')}
 function duplicateOffice(id){const r=read(K.offices).find(x=>x.id===id);if(!r)return;loadOffice(id);currentOfficeId=null;$('#officeNumber').value='';$('#officeDate').value=today();suggestNumber();log('Oficio duplicado',r.number)}
