@@ -207,7 +207,7 @@ function officeDocXml(r){
   if(ex)body+=wP(ex,{align:'both',size:19,after:85});
   body+=wP('Sin otro particular, hago propicia la oportunidad para expresarle los sentimientos de mi especial consideración y estima personal.',{align:'both',size:19,after:110});
   body+=wP('Atentamente;',{bold:true,italic:true,align:'center',size:19,after:160});
-  body+=wP('FIRMADO DIGITALMENTE POR:',{bold:true,align:'center',size:19,after:680});
+  body+=wP('FIRMADO DIGITALMENTE POR:',{bold:true,align:'center',size:19,after:1080});
   body+=wP('_____________________________',{align:'center',size:19,after:20});
   body+=wP('Responsable',{bold:true,align:'center',size:19,after:0});
   body+=wP('Archivo Desconcentrado',{bold:true,align:'center',size:19,after:0});
@@ -337,12 +337,12 @@ async function generatePdf(){
   if(ex)printParagraph(ex,{fontSize:9.1,gap:3});
   printParagraph('Sin otro particular, hago propicia la oportunidad para expresarle los sentimientos de mi especial consideración y estima personal.',{fontSize:9.2,gap:5});
   // La firma queda íntegra en una página; si el contenido crece se utiliza otra hoja.
-  ensureHeight(37);
+  ensureHeight(45);
   doc.setFont('helvetica','bolditalic');doc.setFontSize(9.7);
   doc.text('Atentamente;',pageW/2,y,{align:'center'});y+=8;
   doc.setFont('helvetica','bold');doc.setFontSize(9.1);
   doc.text('FIRMADO DIGITALMENTE POR:',pageW/2,y,{align:'center'});
-  y+=15;
+  y+=22;
   doc.setLineWidth(.2);doc.line(75,y,135,y);y+=4.3;
   doc.text('Responsable',pageW/2,y,{align:'center'});y+=4.1;
   doc.text('Archivo Desconcentrado',pageW/2,y,{align:'center'});
