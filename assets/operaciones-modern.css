@@ -46,3 +46,9 @@ body.dark-theme button:disabled{opacity:.58!important}
 #officePreview th{text-align:center;font-weight:700;}
 #officePreview .signature{color:#000!important;}
 @media print{#officePreview.paper{box-shadow:none!important;border:0!important;max-width:none!important;min-height:0!important;padding:8mm 12mm!important;} #officePreview table{break-inside:auto;} #officePreview tr{break-inside:avoid;}}
+
+/* Oficios institucionales: todas las celdas negras, alineación centrada, sin fondos grises */
+#officePreview table th,#officePreview table td,body.dark #officePreview table th,body.dark #officePreview table td,body[data-theme="dark"] #officePreview table td{background:#fff!important;color:#000!important;text-align:center!important;vertical-align:middle!important;font-weight:400;}
+#officePreview table th,#officePreview table tr:last-child td{font-weight:700!important;}
+#officePreview .doc-header h2,#officePreview .doc-header h3{color:#000!important;}
+#officePreview p{color:#000!important;text-align:justify!important;}
