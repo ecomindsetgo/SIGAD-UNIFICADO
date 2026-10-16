@@ -210,7 +210,7 @@ function officeDocXml(r){
   body+=wP('FIRMADO DIGITALMENTE POR:',{bold:true,align:'center',size:19,after:1080});
   body+=wP('_____________________________',{align:'center',size:19,after:20});
   body+=wP('Responsable',{bold:true,align:'center',size:19,after:0});
-  body+=wP('Archivo Desconcentrado',{bold:true,align:'center',size:19,after:0});
+  body+=wP('Archivo Desconcentrado CSJSA',{bold:true,align:'center',size:19,after:0});
   return `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" xmlns:wp="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing" xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" xmlns:pic="http://schemas.openxmlformats.org/drawingml/2006/picture"><w:body>${body}<w:sectPr><w:pgSz w:w="11906" w:h="16838"/><w:pgMar w:top="650" w:right="1350" w:bottom="650" w:left="1350" w:header="350" w:footer="350"/></w:sectPr></w:body></w:document>`;
 }
 
@@ -345,7 +345,7 @@ async function generatePdf(){
   y+=22;
   doc.setLineWidth(.2);doc.line(75,y,135,y);y+=4.3;
   doc.text('Responsable',pageW/2,y,{align:'center'});y+=4.1;
-  doc.text('Archivo Desconcentrado',pageW/2,y,{align:'center'});
+  doc.text('Archivo Desconcentrado CSJSA',pageW/2,y,{align:'center'});
   doc.save(`Oficio_${String(r.number||'').replace(/[^a-z0-9-]/gi,'_')}.pdf`);
   log('PDF generado',r.number);
 }
