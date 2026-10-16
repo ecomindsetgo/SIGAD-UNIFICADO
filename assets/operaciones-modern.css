@@ -30,3 +30,58 @@ body.dark-theme button:disabled{opacity:.58!important}
 #officePreview .signature{text-align:center;margin-top:14px;color:#000!important}
 #officePreview .signature .line{width:42%;height:1px;background:#000;margin:0 auto 6px}
 @media print{#officePreview.paper{box-shadow:none!important;border:0!important;max-width:none!important;min-height:0!important;padding:12mm 13mm!important;}#officePreview table{break-inside:auto;}#officePreview tr{break-inside:avoid;}}
+
+
+/* Espacio de firma institucional: vista previa y documento impreso */
+#officePreview .office-signature-block{
+  break-inside:avoid;
+  page-break-inside:avoid;
+  text-align:center;
+  margin-top:16px;
+}
+#officePreview .office-signature-block .office-sign-title{
+  text-align:center!important;
+  color:#000!important;
+  font-weight:700!important;
+  margin:0!important;
+}
+#officePreview .office-signature-block .signature{
+  margin-top:76px!important;
+  text-align:center!important;
+  color:#000!important;
+}
+#officePreview .office-signature-block .signature .line{
+  margin:0 auto 7px!important;
+}
+
+/* Indicadores de cantidades del formulario de Oficios: modo oscuro */
+body.dark-theme #view-devoluciones .summary-panel .summary-cards > div,
+.dark-theme #view-devoluciones .summary-panel .summary-cards > div,
+body[data-theme="dark"] #view-devoluciones .summary-panel .summary-cards > div{
+  background:#27374f!important;
+  border:1px solid #657892!important;
+  color:#f8fafc!important;
+  opacity:1!important;
+}
+body.dark-theme #view-devoluciones .summary-panel .summary-cards > div span,
+body.dark-theme #view-devoluciones .summary-panel .summary-cards > div strong,
+.dark-theme #view-devoluciones .summary-panel .summary-cards > div span,
+.dark-theme #view-devoluciones .summary-panel .summary-cards > div strong,
+body[data-theme="dark"] #view-devoluciones .summary-panel .summary-cards > div span,
+body[data-theme="dark"] #view-devoluciones .summary-panel .summary-cards > div strong{
+  color:#ffffff!important;
+  opacity:1!important;
+  text-shadow:none!important;
+}
+body.dark-theme #view-devoluciones .summary-panel .form-actions button,
+.dark-theme #view-devoluciones .summary-panel .form-actions button,
+body[data-theme="dark"] #view-devoluciones .summary-panel .form-actions button{
+  opacity:1!important;
+  color:#fff!important;
+}
+body.dark-theme #view-devoluciones .summary-panel .form-actions button:not(.primary),
+.dark-theme #view-devoluciones .summary-panel .form-actions button:not(.primary),
+body[data-theme="dark"] #view-devoluciones .summary-panel .form-actions button:not(.primary){
+  background:#28384f!important;
+  border-color:#687b94!important;
+}
