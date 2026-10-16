@@ -85,3 +85,80 @@ body[data-theme="dark"] #view-devoluciones .summary-panel .form-actions button:n
   background:#28384f!important;
   border-color:#687b94!important;
 }
+
+/* Oficios A4 · márgenes proporcionados y encabezado compacto, sin modificar otros módulos */
+#officePreview.paper,
+body.dark #officePreview.paper,
+body[data-theme="dark"] #officePreview.paper{
+  padding:43px 76px 48px!important;
+  font-size:12px!important;
+  line-height:1.35!important;
+}
+#officePreview .office-header{
+  grid-template-columns:86px minmax(0,1fr)!important;
+  gap:11px!important;
+  padding-bottom:5px!important;
+  margin-bottom:6px!important;
+  min-height:0!important;
+}
+#officePreview .office-logo-clip{
+  width:84px!important;
+  height:59px!important;
+  overflow:hidden!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+}
+#officePreview .office-logo-clip img{
+  display:block!important;
+  width:83px!important;
+  height:auto!important;
+  max-width:83px!important;
+  margin:0!important;
+  object-fit:contain!important;
+}
+#officePreview .office-header-center{padding-right:32px!important}
+#officePreview .office-title{font-size:17px!important;line-height:1.18!important;font-weight:700!important}
+#officePreview .office-subtitle{font-size:16px!important;line-height:1.17!important;font-weight:400!important;margin-top:3px!important}
+#officePreview .doc-date{margin:3px 0 7px!important;font-size:11px!important}
+#officePreview .office-number{font-size:15px!important;margin:4px 0 7px!important}
+#officePreview .office-meta-row,
+#officePreview .office-dest-name{margin-bottom:1px!important}
+#officePreview .office-dest-role{margin-bottom:4px!important}
+#officePreview .office-meta-pair{margin-bottom:1px!important;grid-template-columns:100px 1fr!important}
+#officePreview p{margin:7px 0!important;font-size:12px!important;line-height:1.38!important;text-align:justify!important;text-indent:0!important}
+#officePreview table.office-table{
+  width:95%!important;
+  margin:8px auto 8px!important;
+  border-collapse:collapse!important;
+  table-layout:fixed!important;
+}
+#officePreview table.office-table th,
+#officePreview table.office-table td{
+  text-align:center!important;
+  vertical-align:middle!important;
+  color:#000!important;
+  background:#fff!important;
+  padding:4px 5px!important;
+  line-height:1.19!important;
+  font-size:10.5px!important;
+  font-weight:400!important;
+  overflow-wrap:break-word!important;
+}
+#officePreview table.office-table th{font-weight:700!important}
+#officePreview table.office-table thead th:first-child{width:8%!important;white-space:nowrap!important}
+#officePreview table.office-table .office-total-row td{
+  border:0!important;
+  font-weight:700!important;
+  background:#fff!important;
+  padding-top:4px!important;
+  padding-bottom:1px!important;
+}
+#officePreview table.office-table .office-total-row td:nth-child(2){text-align:right!important}
+#officePreview .office-closing{text-align:center!important;margin-top:10px!important}
+#officePreview .office-signature-block{margin-top:10px!important;page-break-inside:avoid;break-inside:avoid}
+#officePreview .office-signature-block .signature{margin-top:56px!important}
+@media print{
+  #officePreview.paper{padding:11mm 22mm 14mm!important}
+  #officePreview table.office-table{width:95%!important;margin-left:auto!important;margin-right:auto!important}
+}
