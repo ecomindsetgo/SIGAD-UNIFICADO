@@ -157,7 +157,7 @@ body[data-theme="dark"] #officePreview.paper{
 #officePreview table.office-table .office-total-row td:nth-child(2){text-align:right!important}
 #officePreview .office-closing{text-align:center!important;margin-top:10px!important}
 #officePreview .office-signature-block{margin-top:10px!important;page-break-inside:avoid;break-inside:avoid}
-#officePreview .office-signature-block .signature{margin-top:56px!important}
+#officePreview .office-signature-block .signature{margin-top:82px!important}
 @media print{
   #officePreview.paper{padding:11mm 22mm 14mm!important}
   #officePreview table.office-table{width:95%!important;margin-left:auto!important;margin-right:auto!important}
