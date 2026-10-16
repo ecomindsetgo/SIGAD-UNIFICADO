@@ -157,7 +157,7 @@ function previewHtml(r){
   <p class="office-closing">Atentamente;</p>
   <div class="office-signature-block">
     <div class="office-sign-title">FIRMADO DIGITALMENTE POR:</div>
-    <div class="signature"><div class="line"></div><b>Responsable</b><br><b>Archivo Desconcentrado</b></div>
+    <div class="signature"><div class="line"></div><b>Responsable</b><br><b>Archivo Desconcentrado CSJSA</b></div>
   </div>`
 };
 function showPreview(){const r=collectOffice();if(!r.number||!r.date||!r.recipient){alert('Complete número, fecha y destinatario.');return}if(!r.dependencies.length){alert('Registre al menos una dependencia.');return}$('#officePreview').innerHTML=previewHtml(r);openModal('previewModal')}
