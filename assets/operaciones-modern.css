@@ -63,3 +63,21 @@ body.dark-theme button:disabled{opacity:.58!important}
 #officePreview table th{font-weight:700!important;}
 #officePreview .doc-meta,#officePreview .doc-meta *,#officePreview .doc-date,#officePreview .signature,#officePreview .signature *{color:#000!important;}
 @media print{#officePreview,#officePreview *{color:#000!important;}#officePreview table{break-inside:avoid!important;}#officePreview tr{break-inside:avoid!important;}}
+
+
+/* v2 formato oficio: encabezado y tablas como el modelo institucional */
+#officePreview .doc-header{display:grid!important;grid-template-columns:110px 1fr 20px!important;align-items:center!important;gap:10px!important;border-bottom:1px solid #000!important;padding-bottom:10px!important;margin-bottom:14px!important}
+#officePreview .doc-header img{width:92px!important;max-width:92px!important;height:auto!important;display:block!important;margin:0 auto!important}
+#officePreview .doc-header-center h2{font-size:19px!important;font-weight:700!important;text-align:center!important;margin:0!important;letter-spacing:0!important}
+#officePreview .doc-header-center h3{font-size:18px!important;font-weight:400!important;text-align:center!important;margin:4px 0 0!important}
+#officePreview .doc-office-no{font-size:16px!important;font-weight:700!important;margin:6px 0 14px!important}
+#officePreview .doc-dr-block{margin:0 0 10px!important;line-height:1.45!important}
+#officePreview .doc-dr-block div:nth-child(2){font-size:14px!important;font-weight:700!important}
+#officePreview .doc-dr-block div:nth-child(3){font-size:13px!important}
+#officePreview .doc-meta-grid{display:grid!important;grid-template-columns:112px 1fr!important;gap:3px 8px!important}
+#officePreview table{width:92%!important}
+#officePreview table th{font-weight:700!important;white-space:nowrap!important}
+#officePreview table td{font-weight:400!important}
+#officePreview table tbody tr:last-child td{font-weight:700!important}
+#officePreview table tbody tr:last-child td[colspan]{background:#fff!important}
+#officePreview p{font-size:12px!important;text-indent:0!important}
