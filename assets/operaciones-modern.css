@@ -52,3 +52,14 @@ body.dark-theme button:disabled{opacity:.58!important}
 #officePreview table th,#officePreview table tr:last-child td{font-weight:700!important;}
 #officePreview .doc-header h2,#officePreview .doc-header h3{color:#000!important;}
 #officePreview p{color:#000!important;text-align:justify!important;}
+
+/* Formato de oficio: ajustes exclusivos de la hoja impresa y vista previa. */
+#officePreview{color:#000!important;background:#fff!important;font-family:Arial,Helvetica,sans-serif!important;font-size:12px!important;}
+#officePreview .doc-header{grid-template-columns:76px 1fr 76px!important;border-bottom:1px solid #000!important;}
+#officePreview .doc-header h2{font-size:18px!important;font-weight:700!important;color:#000!important;}
+#officePreview p{color:#000!important;text-align:justify!important;line-height:1.48!important;text-indent:30px!important;margin:14px 0!important;}
+#officePreview table{width:87%!important;margin:12px auto 17px!important;border-collapse:collapse!important;table-layout:auto!important;color:#000!important;}
+#officePreview table th,#officePreview table td{border:1px solid #000!important;color:#000!important;background:#fff!important;text-align:center!important;vertical-align:middle!important;font-size:11px!important;line-height:1.25!important;padding:5px 6px!important;overflow-wrap:anywhere!important;}
+#officePreview table th{font-weight:700!important;}
+#officePreview .doc-meta,#officePreview .doc-meta *,#officePreview .doc-date,#officePreview .signature,#officePreview .signature *{color:#000!important;}
+@media print{#officePreview,#officePreview *{color:#000!important;}#officePreview table{break-inside:avoid!important;}#officePreview tr{break-inside:avoid!important;}}
