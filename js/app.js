@@ -45,26 +45,36 @@ function packObsRow(v={}){const tr=document.createElement('tr');tr.innerHTML=`<t
 function reindex(){$$('#dependencyRows tr').forEach((r,i)=>r.querySelector('.idx').textContent=i+1);$$('#observationRows tr').forEach((r,i)=>r.querySelector('.idx').textContent=i+1);$$('#packageObservationRows tr').forEach((r,i)=>r.querySelector('.idx').textContent=i+1)}
 function calc(){let p=0,f=0;$$('#dependencyRows tr').forEach(r=>{p+=n($('.dep-packages',r).value);f+=n($('.dep-files',r).value)});$('#totalPackages').textContent=fmt(p);$('#totalFiles').textContent=fmt(f);$('#sumPackages').textContent=fmt(p);$('#sumFiles').textContent=fmt(f);$('#sumObs').textContent=$$('#observationRows tr').length;$('#sumPackObs').textContent=$$('#packageObservationRows tr').length}
 
+// Nomenclatura institucional para paquetes de eliminación: 652-26 ELIM a 660-26 ELIM.
+// Mantiene intactas otras series, incluidos E26-85 y rangos normales 26-823.
+function normalizarCodigoEliminacion(codigo){
+ const original=String(codigo??'').trim();
+ const m=original.toUpperCase().match(/^(\d{3,})\s*-\s*(\d{2})\s*(?:ELIM)?$/);
+ return m?`${m[1]}-${m[2]} ELIM`:original;
+}
 // Serie de paquetes consecutivos: primer y último código incluidos.
 function calcularPaquetesEntreCodigos(inicio,fin,modalidad='regular'){
  const a=String(inicio||'').trim().toUpperCase().replace(/\s+/g,''),b=String(fin||'').trim().toUpperCase().replace(/\s+/g,'');
  if(!a||!b)return {cantidad:null,error:''};
  let ini,ult;
  if(modalidad==='eliminacion'){
-  // Modelos históricos: 652-26 / 660-26, E26-85 / E26-91, 26-823 / 26-845.
+  // El sufijo ELIM forma parte del código. Elimina solo espacios para analizarlo,
+  // pero el valor guardado/exportado conserva " ELIM".
   const clasificar=x=>{
-   let m=x.match(/^E(\d{2,4})-(\d+)$/);if(m)return {tipo:'E',serie:m[1],numero:Number(m[2])};
-   m=x.match(/^(\d+)-(\d{2,4})$/);
+   let m=x.match(/^E(\d{2,4})-(\d+)$/);
+   if(m)return {tipo:'E',serie:m[1],numero:Number(m[2]),sufijo:''};
+   m=x.match(/^(\d+)-(\d{2,4})(ELIM)?$/);
    if(!m)return null;
-   const izquierda=Number(m[1]),derecha=Number(m[2]);
-   if(izquierda>99 && derecha<=99)return {tipo:'invertida',serie:m[2],numero:izquierda};
-   if(izquierda<=99 && derecha>99)return {tipo:'normal',serie:m[1],numero:derecha};
-   if(m[1].length>=3 && m[2].length<=2)return {tipo:'invertida',serie:m[2],numero:izquierda};
-   return {tipo:'normal',serie:m[1],numero:derecha};
+   const izquierda=Number(m[1]),derecha=Number(m[2]),sufijo=m[3]||'';
+   if(sufijo && !(m[1].length>=3 && m[2].length===2))return null;
+   if(izquierda>99 && derecha<=99)return {tipo:'invertida',serie:m[2],numero:izquierda,sufijo};
+   if(izquierda<=99 && derecha>99)return {tipo:'normal',serie:m[1],numero:derecha,sufijo};
+   if(m[1].length>=3 && m[2].length<=2)return {tipo:'invertida',serie:m[2],numero:izquierda,sufijo};
+   return {tipo:'normal',serie:m[1],numero:derecha,sufijo};
   };
   ini=clasificar(a);ult=clasificar(b);
-  if(!ini||!ult)return {cantidad:null,error:'Para eliminación use 652-26, E26-85 o 26-823, según la serie.'};
-  if(ini.tipo!==ult.tipo||ini.serie!==ult.serie)return {cantidad:null,error:'Los paquetes deben pertenecer a la misma serie y nomenclatura.'};
+  if(!ini||!ult)return {cantidad:null,error:'En eliminación use 652-26 ELIM a 660-26 ELIM (o la serie específica de su remito).'};
+  if(ini.tipo!==ult.tipo||ini.serie!==ult.serie||ini.sufijo!==ult.sufijo)return {cantidad:null,error:'Ambos paquetes deben tener la misma serie, año y sufijo ELIM.'};
  }else{
   const patron=/^(.*?)(\d+)([A-Z]*)$/;
   const ai=a.match(patron),bi=b.match(patron);
@@ -79,27 +89,28 @@ function calcularPaquetesEntreCodigos(inicio,fin,modalidad='regular'){
 
 // Selector de modalidad sin alterar index.html ni los documentos ya registrados.
 const modalidadOficioLabel=document.createElement('label');
-modalidadOficioLabel.innerHTML='Modalidad del oficio<select id="officeModality"><option value="regular">Devolución de cargos</option><option value="eliminacion">Devolución de cargos por eliminación</option></select><small style="display:block;color:var(--muted,#64748b);font-weight:400;margin-top:4px">Eliminación: 652-26, E26-85 o 26-823 (según el remito). El correlativo del oficio inicia en 0000-26.</small>';
+modalidadOficioLabel.innerHTML='Modalidad del oficio<select id="officeModality"><option value="regular">Devolución de cargos</option><option value="eliminacion">Devolución de cargos por eliminación</option></select><small style="display:block;color:var(--muted,#64748b);font-weight:400;margin-top:4px">Eliminación: 652-26 ELIM a 660-26 ELIM (u otra serie según el remito). El número de oficio continúa el mismo correlativo anual que las devoluciones de cargos.</small>';
 const datosOficio=$('#officeNumber')?.closest('.form-grid');
 if(datosOficio)datosOficio.insertBefore(modalidadOficioLabel,datosOficio.firstElementChild);
 function modalidadOficio(){return $('#officeModality')?.value||'regular'}
 function prepararModalidadOficio({numero=true}={}){
  const elimina=modalidadOficio()==='eliminacion';
  const inicial=$('#rangeStart'),final=$('#rangeEnd');
- if(inicial)inicial.placeholder=elimina?'652-26, E26-85 o 26-823':'26-202';
- if(final)final.placeholder=elimina?'660-26':'26-284';
- if(numero){
-  if(elimina){
-   const year=($('#officeDate')?.value||today()).slice(2,4);
-   $('#officeNumber').value=`0000-${year}`;
-  }else{
-   suggestNumber();
-  }
+ if(inicial)inicial.placeholder=elimina?'652-26 ELIM':'26-202';
+ if(final)final.placeholder=elimina?'660-26 ELIM':'26-284';
+ if(elimina){
+  if(inicial?.value)inicial.value=normalizarCodigoEliminacion(inicial.value);
+  if(final?.value)final.value=normalizarCodigoEliminacion(final.value);
  }
+ // Las modalidades de devolución y eliminación comparten UNA única secuencia.
+ // Mantenga los números de los oficios abiertos y las correcciones manuales.
+ if(numero&&!currentOfficeId&&$('#officeNumber')?.dataset.autoOfficeNumber!=='no')suggestNumber();
  sincronizarPaquetesDelRango();
 }
 $('#officeModality')?.addEventListener('change',()=>prepararModalidadOficio());
-$('#officeDate')?.addEventListener('change',()=>{if(modalidadOficio()==='eliminacion'&&/^0000-\d{2}$/.test($('#officeNumber')?.value||''))prepararModalidadOficio();if(referenciaCampo?.dataset.sigadAutoRef==='si'&&selectorModeloReferencia.value)referenciaCampo.value=referenciaConNumero(selectorModeloReferencia.value);});
+$('#officeDate')?.addEventListener('change',()=>{if(!currentOfficeId&&$('#officeNumber')?.dataset.autoOfficeNumber==='si')suggestNumber();if(referenciaCampo?.dataset.sigadAutoRef==='si'&&selectorModeloReferencia.value)referenciaCampo.value=referenciaConNumero(selectorModeloReferencia.value);});
+// Si el usuario modifica el correlativo, no se lo sobrescribe al cambiar modalidad.
+$('#officeNumber')?.addEventListener('input',()=>{$('#officeNumber').dataset.autoOfficeNumber='no'});
 
 // Catálogo inicial de ejemplo más destinatarios, cargos y dependencias
 // recuperados de los oficios ya guardados. Los listados de Word se incorporan
@@ -589,16 +600,78 @@ function sincronizarPaquetesDelRango(){
 }
 for(const selector of ['#rangeStart','#rangeEnd']){
  const campo=$(selector);
- if(campo){campo.addEventListener('input',sincronizarPaquetesDelRango);campo.addEventListener('change',sincronizarPaquetesDelRango)}
+ if(campo){
+  campo.addEventListener('input',()=>{
+   if(/\bELIM\b/i.test(campo.value) && modalidadOficio()!=='eliminacion'){
+    $('#officeModality').value='eliminacion';
+    prepararModalidadOficio({numero:false});
+   }else sincronizarPaquetesDelRango();
+  });
+  campo.addEventListener('change',()=>{
+   if(modalidadOficio()==='eliminacion')campo.value=normalizarCodigoEliminacion(campo.value);
+   sincronizarPaquetesDelRango();
+  });
+ }
+
 }
 
 $('#addDependency').onclick=()=>{$('#dependencyRows').append(depRow());reindex();sincronizarPaquetesDelRango()};$('#addObservation').onclick=()=>{$('#observationRows').append(obsRow());reindex();calc()};$('#addPackageObservation').onclick=()=>{$('#packageObservationRows').append(packObsRow());reindex();calc()};
-function collectOffice(){return{id:currentOfficeId||uid(),number:$('#officeNumber').value.trim(),date:$('#officeDate').value,recipient:$('#recipient').value.trim(),recipientRole:$('#recipientRole').value.trim(),references:$('#references').value.split(/\n+/).map(x=>x.trim()).filter(Boolean),referenceDate:$('#referenceDate').value,cargoType:$('#cargoType').value,modality:modalidadOficio(),rangeStart:$('#rangeStart').value.trim(),rangeEnd:$('#rangeEnd').value.trim(),dependencies:$$('#dependencyRows tr').map(r=>({name:$('.dep-name',r).value.trim(),packages:n($('.dep-packages',r).value),files:n($('.dep-files',r).value)})).filter(x=>x.name||x.packages||x.files),observations:$$('#observationRows tr').map(r=>({dep:$('.obs-dep',r).value.trim(),file:$('.obs-file',r).value.trim(),folios:n($('.obs-folios',r).value),type:$('.obs-type',r).value,text:$('.obs-text',r).value.trim()})).filter(x=>x.dep||x.file||x.text),packageObservations:$$('#packageObservationRows tr').map(r=>({dep:$('.pobs-dep',r).value.trim(),code:$('.pobs-code',r).value.trim(),folios:n($('.pobs-folios',r).value),text:$('.pobs-text',r).value.trim()})).filter(x=>x.dep||x.code||x.text)}}
-async function saveOffice(status='borrador'){if(!window.SIGADCloud?.ready()){try{if(!window.SIGADCloud?.load)throw Error('No se cargó el módulo compartido de documentos. Actualice la página e inténtelo de nuevo.');await window.SIGADCloud.load();}catch(err){toast('No se pudieron cargar los oficios: '+err.message,'error');return null;}}const r=collectOffice();if(!r.number||!r.date){alert('Complete el número y la fecha del oficio.');return null}r.status=status;r.updatedAt=new Date().toISOString();const all=read(K.offices);const i=all.findIndex(x=>x.id===r.id);if(i>=0){r.createdAt=all[i].createdAt||r.updatedAt;all[i]=r}else{r.createdAt=r.updatedAt;all.unshift(r)}try{await write(K.offices,all)}catch(err){toast('No se pudo guardar: '+err.message,'error');return null;}currentOfficeId=r.id;log(status==='generado'?'Oficio generado':'Borrador guardado',r.number);renderDashboard();return r}
+function collectOffice(){return{id:currentOfficeId||uid(),number:$('#officeNumber').value.trim(),date:$('#officeDate').value,recipient:$('#recipient').value.trim(),recipientRole:$('#recipientRole').value.trim(),references:$('#references').value.split(/\n+/).map(x=>x.trim()).filter(Boolean),referenceDate:$('#referenceDate').value,cargoType:$('#cargoType').value,modality:modalidadOficio(),rangeStart:modalidadOficio()==='eliminacion'?normalizarCodigoEliminacion($('#rangeStart').value):$('#rangeStart').value.trim(),rangeEnd:modalidadOficio()==='eliminacion'?normalizarCodigoEliminacion($('#rangeEnd').value):$('#rangeEnd').value.trim(),dependencies:$$('#dependencyRows tr').map(r=>({name:$('.dep-name',r).value.trim(),packages:n($('.dep-packages',r).value),files:n($('.dep-files',r).value)})).filter(x=>x.name||x.packages||x.files),observations:$$('#observationRows tr').map(r=>({dep:$('.obs-dep',r).value.trim(),file:$('.obs-file',r).value.trim(),folios:n($('.obs-folios',r).value),type:$('.obs-type',r).value,text:$('.obs-text',r).value.trim()})).filter(x=>x.dep||x.file||x.text),packageObservations:$$('#packageObservationRows tr').map(r=>({dep:$('.pobs-dep',r).value.trim(),code:$('.pobs-code',r).value.trim(),folios:n($('.pobs-folios',r).value),text:$('.pobs-text',r).value.trim()})).filter(x=>x.dep||x.code||x.text)}}
+async function saveOffice(status='borrador'){
+ if(!window.SIGADCloud?.ready()){
+  try{if(!window.SIGADCloud?.load)throw Error('No se cargó el módulo compartido de documentos. Actualice la página e inténtelo de nuevo.');await window.SIGADCloud.load();}
+  catch(err){toast('No se pudieron cargar los oficios: '+err.message,'error');return null;}
+ }
+ // El cálculo automático se refresca después de cargar los registros de Firestore.
+ if(!currentOfficeId&&$('#officeNumber')?.dataset.autoOfficeNumber==='si')suggestNumber();
+ const r=collectOffice();
+ if(!r.number||!r.date){alert('Complete el número y la fecha del oficio.');return null}
+ const identidad=identidadNumeroOficio(r);
+ if(!currentOfficeId&&(!identidad||identidad.numero<=0)){
+  alert('Indique un número de oficio válido y mayor a cero. Los oficios de eliminación usan el mismo correlativo que las devoluciones, por ejemplo: 019-2026-OAD-CSJSA/PJ.');
+  return null;
+ }
+ const all=read(K.offices);
+ const repetido=identidad&&identidad.numero>0&&all.find(x=>x.id!==r.id&&(
+  (id=>id&&id.numero===identidad.numero&&id.anio===identidad.anio)(identidadNumeroOficio(x))
+ ));
+ if(repetido){
+  alert(`El correlativo ${identidad.numero.toString().padStart(3,'0')}-${identidad.anio} ya está registrado en ${repetido.number} (${repetido.modality==='eliminacion'?'eliminación':'devolución'}). Ambas modalidades comparten la misma numeración. Seleccione otro correlativo.`);
+  return null;
+ }
+ r.status=status;r.updatedAt=new Date().toISOString();
+ const i=all.findIndex(x=>x.id===r.id);
+ if(i>=0){r.createdAt=all[i].createdAt||r.updatedAt;all[i]=r}else{r.createdAt=r.updatedAt;all.unshift(r)}
+ try{await write(K.offices,all)}catch(err){toast('No se pudo guardar: '+err.message,'error');return null;}
+ currentOfficeId=r.id;
+ $('#officeNumber').dataset.autoOfficeNumber='no';
+ log(status==='generado'?'Oficio generado':'Borrador guardado',r.number);
+ renderDashboard();return r;
+}
 $('#btnSaveDraft').onclick=async()=>{if(await saveOffice('borrador'))alert('Borrador guardado correctamente.')};
-function suggestNumber(){if(modalidadOficio()==='eliminacion'){const year=($('#officeDate').value||today()).slice(2,4);$('#officeNumber').value=`0000-${year}`;return;}const d=$('#officeDate').value||today(),year=d.slice(0,4),nums=read(K.offices).filter(x=>(x.date||'').startsWith(year)).map(x=>parseInt(String(x.number||'').match(/^(\d+)/)?.[1]||0)).filter(Boolean),next=(Math.max(0,...nums)+1).toString().padStart(3,'0');$('#officeNumber').value=`${next}-${year}-OAD-CSJSA/PJ`}
+// Se toma el año y correlativo del NÚMERO de oficio; no del rango de paquetes.
+// Soporta oficios históricos: 001 -2026-OAD..., 001-26, 001-2026-...
+function identidadNumeroOficio(oficio){
+ const raw=String(oficio?.number||'').trim();
+ const match=raw.match(/^0*(\d{1,8})\s*[-–]\s*(20\d{2}|\d{2})(?=$|[-–\s/])/);
+ if(match){
+  const numero=Number(match[1]),anio=match[2].length===2?'20'+match[2]:match[2];
+  return {numero,anio};
+ }
+ // Oficios que se registraron antiguamente solo con el número y fecha.
+ const soloNumero=raw.match(/^0*(\d{1,8})$/);
+ const anio=String(oficio?.date||'').slice(0,4);
+ return soloNumero&&/^20\d{2}$/.test(anio)?{numero:Number(soloNumero[1]),anio}:null;
+}
+function suggestNumber(){
+ const anio=($('#officeDate')?.value||today()).slice(0,4);
+ const usados=read(K.offices).map(identidadNumeroOficio).filter(x=>x&&x.anio===anio&&x.numero>0).map(x=>x.numero);
+ const siguiente=String(Math.max(0,...usados)+1).padStart(3,'0');
+ $('#officeNumber').value=`${siguiente}-${anio}-OAD-CSJSA/PJ`;
+ $('#officeNumber').dataset.autoOfficeNumber='si';
+}
 $('#btnSuggestNumber').onclick=suggestNumber;
-function newOffice(){currentOfficeId=null;if(referenciaCampo)delete referenciaCampo.dataset.sigadAutoRef;inputCorrelativoReferencia.value='0000';selectorModeloReferencia.value='';$('#officeForm').reset();$('#officeModality').value='regular';actualizarModelosReferencia(null);$('#officeDate').value=today();$('#cargoType').value='digital';$('#dependencyRows').innerHTML='';$('#observationRows').innerHTML='';$('#packageObservationRows').innerHTML='';$('#dependencyRows').append(depRow());prepararModalidadOficio();reindex();sincronizarPaquetesDelRango();$('#historyPanel').classList.add('hidden')}
+function newOffice(){currentOfficeId=null;if(referenciaCampo)delete referenciaCampo.dataset.sigadAutoRef;inputCorrelativoReferencia.value='0000';selectorModeloReferencia.value='';$('#officeForm').reset();$('#officeModality').value='regular';$('#officeNumber').dataset.autoOfficeNumber='si';actualizarModelosReferencia(null);$('#officeDate').value=today();$('#cargoType').value='digital';$('#dependencyRows').innerHTML='';$('#observationRows').innerHTML='';$('#packageObservationRows').innerHTML='';$('#dependencyRows').append(depRow());prepararModalidadOficio();reindex();sincronizarPaquetesDelRango();$('#historyPanel').classList.add('hidden')}
 $('#btnNew').onclick=newOffice;
 function dependencyPhrase(r){const names=r.dependencies.map(x=>x.name).filter(Boolean);if(names.length===1){const k=names[0].toLocaleUpperCase('es-PE');return `correspondientes ${k.includes('SALA')?'a la':'al'} ${names[0]}`;}if(names.length>1)return'correspondientes a las dependencias detalladas a continuación';return'correspondientes a la documentación recepcionada'}
 // Redacción contrastada con oficios manuales 016, 017 y 018 de 2026.
@@ -850,7 +923,7 @@ async function generatePdf(){
 }
 
 $('#btnPdf').onclick=generatePdf;
-function loadOffice(id){const r=read(K.offices).find(x=>x.id===id);if(!r)return;currentOfficeId=r.id;$('#officeNumber').value=r.number||'';$('#officeDate').value=r.date||'';$('#recipient').value=r.recipient||'';$('#recipientRole').value=r.recipientRole||'';$('#references').value=(r.references||[]).join('\n');$('#referenceDate').value=r.referenceDate||'';$('#cargoType').value=r.cargoType||'digital';$('#officeModality').value=r.modality||(/^[0-9]{3,}-[0-9]{2,4}$/.test(String(r.rangeStart||''))?'eliminacion':'regular');catalogoDestinatariosSelect.value=buscarPersonaCatalogo(r.recipient)?.nombre||'';actualizarModelosReferencia(buscarPersonaCatalogo(r.recipient),{modificar:false});if(referenciaCampo)referenciaCampo.dataset.sigadAutoRef='no';$('#rangeStart').value=r.rangeStart||'';$('#rangeEnd').value=r.rangeEnd||'';prepararModalidadOficio({numero:false});$('#dependencyRows').innerHTML='';(r.dependencies||[]).forEach(x=>$('#dependencyRows').append(depRow(x)));$('#observationRows').innerHTML='';(r.observations||[]).forEach(x=>$('#observationRows').append(obsRow(x)));$('#packageObservationRows').innerHTML='';(r.packageObservations||[]).forEach(x=>$('#packageObservationRows').append(packObsRow(x)));if(!r.dependencies?.length)$('#dependencyRows').append(depRow());reindex();sincronizarPaquetesDelRango();$('#historyPanel').classList.add('hidden');navigate('devoluciones')}
+function loadOffice(id){const r=read(K.offices).find(x=>x.id===id);if(!r)return;currentOfficeId=r.id;$('#officeNumber').value=r.number||'';$('#officeNumber').dataset.autoOfficeNumber='no';$('#officeDate').value=r.date||'';$('#recipient').value=r.recipient||'';$('#recipientRole').value=r.recipientRole||'';$('#references').value=(r.references||[]).join('\n');$('#referenceDate').value=r.referenceDate||'';$('#cargoType').value=r.cargoType||'digital';$('#officeModality').value=r.modality||(/^[0-9]{3,}-[0-9]{2,4}(?:\s*ELIM)?$/i.test(String(r.rangeStart||''))?'eliminacion':'regular');catalogoDestinatariosSelect.value=buscarPersonaCatalogo(r.recipient)?.nombre||'';actualizarModelosReferencia(buscarPersonaCatalogo(r.recipient),{modificar:false});if(referenciaCampo)referenciaCampo.dataset.sigadAutoRef='no';$('#rangeStart').value=r.rangeStart||'';$('#rangeEnd').value=r.rangeEnd||'';prepararModalidadOficio({numero:false});$('#dependencyRows').innerHTML='';(r.dependencies||[]).forEach(x=>$('#dependencyRows').append(depRow(x)));$('#observationRows').innerHTML='';(r.observations||[]).forEach(x=>$('#observationRows').append(obsRow(x)));$('#packageObservationRows').innerHTML='';(r.packageObservations||[]).forEach(x=>$('#packageObservationRows').append(packObsRow(x)));if(!r.dependencies?.length)$('#dependencyRows').append(depRow());reindex();sincronizarPaquetesDelRango();$('#historyPanel').classList.add('hidden');navigate('devoluciones')}
 function duplicateOffice(id){const r=read(K.offices).find(x=>x.id===id);if(!r)return;loadOffice(id);currentOfficeId=null;$('#officeNumber').value='';$('#officeDate').value=today();suggestNumber();log('Oficio duplicado',r.number)}
 async function deleteOffice(id){if(!confirm('¿Eliminar este registro? Esta acción quedará anotada en auditoría.'))return;const all=read(K.offices),r=all.find(x=>x.id===id);try{await write(K.offices,all.filter(x=>x.id!==id))}catch(err){toast('No se pudo eliminar: '+err.message,'error');return;}if(r)log('Oficio eliminado',r.number);renderHistory();renderDashboard()}
 function renderHistory(){const all=read(K.offices);$('#historyList').innerHTML=all.length?all.map(r=>`<div class="history-row"><strong>${esc(r.number)}</strong><span>${fmtDate(r.date)}</span><span>${esc(r.recipient)}</span><span>${fmt(total(r,'packages'))} paq.</span><span>${r.observations?.length||0} obs.</span><div class="history-actions"><button onclick="SIGAD.loadOffice('${r.id}')">Abrir</button><button onclick="SIGAD.duplicateOffice('${r.id}')">Duplicar</button><button onclick="SIGAD.deleteOffice('${r.id}')">Eliminar</button></div></div>`).join(''):'<div class="empty">Todavía no hay oficios guardados.</div>'}
@@ -919,7 +992,7 @@ $('#btnBackup').onclick=()=>openModal('backupModal');$('#btnExportBackup').oncli
 $('#backupFile').onchange=()=>{alert('La restauración directa está deshabilitada para proteger los registros compartidos. Contacte al administrador para una importación validada.');$('#backupFile').value='';};
 window.SIGAD={getData:()=>({offices:read(K.offices),transfers:read(K.transfers),eliminations:read(K.eliminations),ranges:read(K.ranges),audit:read(K.audit)}),viewOffice:(id)=>{const r=read(K.offices).find(x=>x.id===id);if(!r)return;loadOffice(id);$('#officePreview').innerHTML=previewHtml(r);openModal('previewModal')},navigate,loadOffice,duplicateOffice,deleteOffice,deleteRange,deleteTransfer,deleteElimination,log,toast,findPackage};
 window.addEventListener('sigad:acceso-verificado',e=>{if(e.detail?.ready){window.SIGADCloud?.load?.().catch(err=>toast('No se pudieron consultar los registros compartidos: '+err.message,'error'));}else{document.querySelectorAll('.profile-name').forEach(x=>x.textContent='Usuario SIGAD');}});
-window.addEventListener('sigad:datos-cargados',()=>{renderDashboard();renderReports();renderAudit();renderHistory();renderTransfers();renderEliminations();renderArchivo360();});
+window.addEventListener('sigad:datos-cargados',()=>{if(!currentOfficeId&&$('#officeNumber')?.dataset.autoOfficeNumber==='si')suggestNumber();renderDashboard();renderReports();renderAudit();renderHistory();renderTransfers();renderEliminations();renderArchivo360();});
 newOffice();renderDashboard();
 // Extensiones independientes: contraste accesible y depuración selectiva de registros.
 // No modifican el funcionamiento de los módulos operativos.
