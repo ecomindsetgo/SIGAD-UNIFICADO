@@ -39,25 +39,512 @@ function closeModal(el){const m=typeof el==='string'?$('#'+el):el.closest('.moda
 $$('.modal-close').forEach(b=>b.onclick=()=>closeModal(b));$$('.modal').forEach(m=>m.addEventListener('click',e=>{if(e.target===m)closeModal(m)}));
 function total(r,k){return (r.dependencies||[]).reduce((s,x)=>s+n(x[k]),0)}
 function detectObsType(t){const s=String(t||'').toUpperCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');if(s.includes('DUPLIC'))return'EXPEDIENTE DUPLICADO';if(s.includes('NO ESTA EN LISTADO')||s.includes('NO SE ENCUENTRA EN LISTADO'))return'NO ESTÁ EN LISTADO';if(s.includes('RESOLUCION NO CORRESPONDE')||s.includes('RESOLUCION NO PERTENECE'))return'RESOLUCIÓN NO CORRESPONDE';if(s.includes('FALTA RESOLUCION'))return'FALTA RESOLUCIÓN DE ARCHIVO';if(s.includes('FALTA TOMO')||s.includes('FALTAN TOMO'))return'FALTA TOMO';if(s.includes('FOLIATURA')||s.includes('TOMO'))return'FOLIATURA / TOMOS';return'OTRO'}
-function depRow(v={}){const tr=document.createElement('tr');tr.innerHTML=`<td class="idx"></td><td><input class="dep-name" value="${esc(v.name||'')}"></td><td><input class="dep-packages" type="number" min="0" value="${n(v.packages)||''}"></td><td><input class="dep-files" type="number" min="0" value="${n(v.files)||''}"></td><td><button type="button" class="row-delete">×</button></td>`;tr.oninput=()=>{calc();if($$('#dependencyRows tr').length>1)sincronizarPaquetesDelRango()};tr.querySelector('.row-delete').onclick=()=>{tr.remove();reindex();sincronizarPaquetesDelRango()};return tr}
-function obsRow(v={}){const tr=document.createElement('tr');tr.innerHTML=`<td class="idx"></td><td><input class="obs-dep" value="${esc(v.dep||'')}"></td><td><input class="obs-file" value="${esc(v.file||'')}"></td><td><input class="obs-folios" type="number" min="0" value="${n(v.folios)||''}"></td><td><select class="obs-type">${obsTypes.map(x=>`<option ${x===(v.type||'OTRO')?'selected':''}>${x}</option>`).join('')}</select></td><td><textarea class="obs-text" rows="2">${esc(v.text||'')}</textarea></td><td><button type="button" class="row-delete">×</button></td>`;tr.querySelector('.row-delete').onclick=()=>{tr.remove();reindex();calc()};tr.querySelector('.obs-text').addEventListener('change',e=>{const t=detectObsType(e.target.value);if(t!=='OTRO')tr.querySelector('.obs-type').value=t});tr.oninput=calc;return tr}
-function packObsRow(v={}){const tr=document.createElement('tr');tr.innerHTML=`<td class="idx"></td><td><input class="pobs-dep" value="${esc(v.dep||'')}"></td><td><input class="pobs-code" value="${esc(v.code||'')}"></td><td><input class="pobs-folios" type="number" min="0" value="${n(v.folios)||''}"></td><td><textarea class="pobs-text" rows="2">${esc(v.text||'')}</textarea></td><td><button type="button" class="row-delete">×</button></td>`;tr.querySelector('.row-delete').onclick=()=>{tr.remove();reindex();calc()};tr.oninput=calc;return tr}
+function depRow(v={}){const tr=document.createElement('tr');tr.innerHTML=`<td class="idx"></td><td><input class="dep-name" list="sigad-lista-dependencias" value="${esc(v.name||'')}"></td><td><input class="dep-packages" type="number" min="0" value="${n(v.packages)||''}"></td><td><input class="dep-files" type="number" min="0" value="${n(v.files)||''}"></td><td><button type="button" class="row-delete">×</button></td>`;tr.oninput=()=>{calc();if($$('#dependencyRows tr').length>1)sincronizarPaquetesDelRango()};tr.querySelector('.row-delete').onclick=()=>{tr.remove();reindex();sincronizarPaquetesDelRango()};return tr}
+function obsRow(v={}){const tr=document.createElement('tr');tr.innerHTML=`<td class="idx"></td><td><input class="obs-dep" list="sigad-lista-dependencias" value="${esc(v.dep||'')}"></td><td><input class="obs-file" value="${esc(v.file||'')}"></td><td><input class="obs-folios" type="number" min="0" value="${n(v.folios)||''}"></td><td><select class="obs-type">${obsTypes.map(x=>`<option ${x===(v.type||'OTRO')?'selected':''}>${x}</option>`).join('')}</select></td><td><textarea class="obs-text" rows="2">${esc(v.text||'')}</textarea></td><td><button type="button" class="row-delete">×</button></td>`;tr.querySelector('.row-delete').onclick=()=>{tr.remove();reindex();calc()};tr.querySelector('.obs-text').addEventListener('change',e=>{const t=detectObsType(e.target.value);if(t!=='OTRO')tr.querySelector('.obs-type').value=t});tr.oninput=calc;return tr}
+function packObsRow(v={}){const tr=document.createElement('tr');tr.innerHTML=`<td class="idx"></td><td><input class="pobs-dep" list="sigad-lista-dependencias" value="${esc(v.dep||'')}"></td><td><input class="pobs-code" value="${esc(v.code||'')}"></td><td><input class="pobs-folios" type="number" min="0" value="${n(v.folios)||''}"></td><td><textarea class="pobs-text" rows="2">${esc(v.text||'')}</textarea></td><td><button type="button" class="row-delete">×</button></td>`;tr.querySelector('.row-delete').onclick=()=>{tr.remove();reindex();calc()};tr.oninput=calc;return tr}
 function reindex(){$$('#dependencyRows tr').forEach((r,i)=>r.querySelector('.idx').textContent=i+1);$$('#observationRows tr').forEach((r,i)=>r.querySelector('.idx').textContent=i+1);$$('#packageObservationRows tr').forEach((r,i)=>r.querySelector('.idx').textContent=i+1)}
 function calc(){let p=0,f=0;$$('#dependencyRows tr').forEach(r=>{p+=n($('.dep-packages',r).value);f+=n($('.dep-files',r).value)});$('#totalPackages').textContent=fmt(p);$('#totalFiles').textContent=fmt(f);$('#sumPackages').textContent=fmt(p);$('#sumFiles').textContent=fmt(f);$('#sumObs').textContent=$$('#observationRows tr').length;$('#sumPackObs').textContent=$$('#packageObservationRows tr').length}
 
 // Serie de paquetes consecutivos: primer y último código incluidos.
-function calcularPaquetesEntreCodigos(inicio,fin){
+function calcularPaquetesEntreCodigos(inicio,fin,modalidad='regular'){
  const a=String(inicio||'').trim().toUpperCase().replace(/\s+/g,''),b=String(fin||'').trim().toUpperCase().replace(/\s+/g,'');
  if(!a||!b)return {cantidad:null,error:''};
- const patron=/^(.*?)(\d+)([A-Z]*)$/;
- const ini=a.match(patron),ult=b.match(patron);
- if(!ini||!ult)return {cantidad:null,error:'Ingrese códigos válidos, por ejemplo 26-853 y 26-875.'};
- if(ini[1]!==ult[1]||ini[3]!==ult[3])return {cantidad:null,error:'El paquete inicial y final deben pertenecer a la misma serie y año.'};
- const n1=Number(ini[2]),n2=Number(ult[2]);
- if(!Number.isSafeInteger(n1)||!Number.isSafeInteger(n2))return {cantidad:null,error:'La numeración del paquete está fuera del rango admitido.'};
- if(n2<n1)return {cantidad:null,error:'El paquete final debe ser igual o posterior al paquete inicial.'};
- return {cantidad:n2-n1+1,error:''};
+ let ini,ult;
+ if(modalidad==='eliminacion'){
+  // Modelos históricos: 652-26 / 660-26, E26-85 / E26-91, 26-823 / 26-845.
+  const clasificar=x=>{
+   let m=x.match(/^E(\d{2,4})-(\d+)$/);if(m)return {tipo:'E',serie:m[1],numero:Number(m[2])};
+   m=x.match(/^(\d+)-(\d{2,4})$/);
+   if(!m)return null;
+   const izquierda=Number(m[1]),derecha=Number(m[2]);
+   if(izquierda>99 && derecha<=99)return {tipo:'invertida',serie:m[2],numero:izquierda};
+   if(izquierda<=99 && derecha>99)return {tipo:'normal',serie:m[1],numero:derecha};
+   if(m[1].length>=3 && m[2].length<=2)return {tipo:'invertida',serie:m[2],numero:izquierda};
+   return {tipo:'normal',serie:m[1],numero:derecha};
+  };
+  ini=clasificar(a);ult=clasificar(b);
+  if(!ini||!ult)return {cantidad:null,error:'Para eliminación use 652-26, E26-85 o 26-823, según la serie.'};
+  if(ini.tipo!==ult.tipo||ini.serie!==ult.serie)return {cantidad:null,error:'Los paquetes deben pertenecer a la misma serie y nomenclatura.'};
+ }else{
+  const patron=/^(.*?)(\d+)([A-Z]*)$/;
+  const ai=a.match(patron),bi=b.match(patron);
+  if(!ai||!bi)return {cantidad:null,error:'Ingrese códigos válidos, por ejemplo 26-853 y 26-875.'};
+  if(ai[1]!==bi[1]||ai[3]!==bi[3])return {cantidad:null,error:'El paquete inicial y final deben pertenecer a la misma serie y año.'};
+  ini={numero:Number(ai[2])};ult={numero:Number(bi[2])};
+ }
+ if(!Number.isSafeInteger(ini.numero)||!Number.isSafeInteger(ult.numero))return {cantidad:null,error:'La numeración del paquete está fuera del rango admitido.'};
+ if(ult.numero<ini.numero)return {cantidad:null,error:'El paquete final debe ser igual o posterior al inicial.'};
+ return {cantidad:ult.numero-ini.numero+1,error:''};
 }
+
+// Selector de modalidad sin alterar index.html ni los documentos ya registrados.
+const modalidadOficioLabel=document.createElement('label');
+modalidadOficioLabel.innerHTML='Modalidad del oficio<select id="officeModality"><option value="regular">Devolución de cargos</option><option value="eliminacion">Devolución de cargos por eliminación</option></select><small style="display:block;color:var(--muted,#64748b);font-weight:400;margin-top:4px">Eliminación: 652-26, E26-85 o 26-823 (según el remito). El correlativo del oficio inicia en 0000-26.</small>';
+const datosOficio=$('#officeNumber')?.closest('.form-grid');
+if(datosOficio)datosOficio.insertBefore(modalidadOficioLabel,datosOficio.firstElementChild);
+function modalidadOficio(){return $('#officeModality')?.value||'regular'}
+function prepararModalidadOficio({numero=true}={}){
+ const elimina=modalidadOficio()==='eliminacion';
+ const inicial=$('#rangeStart'),final=$('#rangeEnd');
+ if(inicial)inicial.placeholder=elimina?'652-26, E26-85 o 26-823':'26-202';
+ if(final)final.placeholder=elimina?'660-26':'26-284';
+ if(numero){
+  if(elimina){
+   const year=($('#officeDate')?.value||today()).slice(2,4);
+   $('#officeNumber').value=`0000-${year}`;
+  }else{
+   suggestNumber();
+  }
+ }
+ sincronizarPaquetesDelRango();
+}
+$('#officeModality')?.addEventListener('change',()=>prepararModalidadOficio());
+$('#officeDate')?.addEventListener('change',()=>{if(modalidadOficio()==='eliminacion'&&/^0000-\d{2}$/.test($('#officeNumber')?.value||''))prepararModalidadOficio();if(referenciaCampo?.dataset.sigadAutoRef==='si'&&selectorModeloReferencia.value)referenciaCampo.value=referenciaConNumero(selectorModeloReferencia.value);});
+
+// Catálogo inicial de ejemplo más destinatarios, cargos y dependencias
+// recuperados de los oficios ya guardados. Los listados de Word se incorporan
+// después de verificar el documento original; no se inventan personas.
+const catalogoBaseDestinatarios=[
+ {
+  "nombre": "JORGE LUIS YOUNG OLORTIGA",
+  "cargo": "ADMINISTRADOR DEL MÓDULO DE FAMILIA – CSJSA",
+  "referencias": [],
+  "dependencias": [],
+  "dependenciasObs": []
+ },
+ {
+  "nombre": "CRISTHIAN EDUARDO INCISO RODRIGUEZ",
+  "cargo": "ADMINISTRADOR DEL MODULO CORPORATIVO CIVIL – CSJSA",
+  "referencias": [
+   "OFICIO N° 0000-2026-MCC-GAD-CSJSA-PJ-PJ.",
+   "OFICIO N° 0000-2026-CSJSA-PJ."
+  ],
+  "dependencias": [
+   "CUARTO JUZGADO CIVIL",
+   "PRIMER JUZGADO CIVIL",
+   "PRIMER JUZGADO DE PAZ LETRADO CIVIL",
+   "QUINTO JUZGADO CIVIL",
+   "SEGUNDA SALA CIVIL",
+   "SEGUNDO JUZGADO CIVIL",
+   "SEGUNDO JUZGADO DE PAZ LETRADO CIVIL",
+   "TERCER JUZGADO CIVIL"
+  ],
+  "dependenciasObs": [
+   "1º JUZGADO DE PAZ LETRADO CIVIL",
+   "2º JUZGADO DE PAZ LETRADO CIVIL",
+   "4TO JUZGADO CIVIL",
+   "5TO JUZGADO CIVIL"
+  ]
+ },
+ {
+  "nombre": "LUIS MARIANO CHAVEZ CERVERA",
+  "cargo": "ADMINISTRADOR DEL MÓDULO CORPORATIVO LABORAL",
+  "referencias": [
+   "OFICIO N° 0000-2026-1ºJEL-CSJSANTA.",
+   "OFICIO N° 0000-2026-1ºJPLL-CSJSANTA.",
+   "OFICIO N° 0000-2026-2ºJPLL-CSJSANTA.",
+   "OFICIO N° 0000-2026-3ºJPLL-CSJSANTA.",
+   "OFICIO N° 0000-2026-8ºJEL-CSJSANTA.",
+   "OFICIO N° 0000-2026-2ºJEL-CSJSANTA.",
+   "OFICIO N° 0000-2026-3ºJEL-CSJSANTA.",
+   "OFICIO N° 0000-2026-5ºJEL-CSJSANTA.",
+   "OFICIO N° 0000-2026-9NO-JEL-NLPT/PJ.",
+   "OFICIO N° 0000-2026-3ºJPLL-CSJSANTA"
+  ],
+  "dependencias": [
+   "1ER JUZGADO DE PAZ LETRADO - NLPT",
+   "1ER JUZGADO LABORAL - NLPT",
+   "2DO JUZGADO DE PAZ LETRADO - NLPT",
+   "2DO JUZGADO LABORAL - NLPT",
+   "3ER JUZGADO DE PAZ LETRADO - NLPT",
+   "3ER JUZGADO LABORAL - NLPT",
+   "3RO JUZGADO LABORAL - NLPT",
+   "5TO JUZGADO LABORAL - NLPT",
+   "6TO JUZGADO LABORAL - NLPT",
+   "8VO JUZGADO LABORAL - NLPT",
+   "9NO JUZGADO LABORAL - NLPT"
+  ],
+  "dependenciasObs": []
+ },
+ {
+  "nombre": "JIMMY MICHAEL CERON SALDAÑA",
+  "cargo": "ADMINISTRADOR DEL MÓDULO CONTENCIOSO ADMINISTRATIVO LABORAL Y PREVISIONAL",
+  "referencias": [
+   "OFICIO N° 0000-2026-MCCALP-CSJSA-PJ-PJ."
+  ],
+  "dependencias": [
+   "CUARTO JUZGADO CONTENCIOSO ADMINISTRATIVO",
+   "SÉPTIMO JUZGADO CONTENCIOSO ADMINISTRATIVO"
+  ],
+  "dependenciasObs": [
+   "4º JUZGADO CONTENCIOSO ADM",
+   "4º JUZGADO CONTENCIOSO ADM.",
+   "JUZGADO CONSTITUCIONAL"
+  ]
+ },
+ {
+  "nombre": "EVERT QUESQUÉN VÁSQUEZ",
+  "cargo": "ADMINISTRADOR DEL MODULO DE FLAGRANCIA – CSJSA",
+  "referencias": [
+   "OFICIO N° 0000-2026-0-3ºJIP-CSJSA-PJ/JLPS.",
+   "OFICIO N° 0000-2026-NCPP-CSJS-PJ.",
+   "OFICIO N° 0000-2026-0-1ºJIPTFLA-CSJS/PJ.",
+   "OFICIO N° 0000-2026-0-3ºJIPF-CSJSA-PJ/JLPS."
+  ],
+  "dependencias": [
+   "PRIMER JUZGADO DE INVESTIGACIÓN PREPARATORIA DE FLAGRANCIA",
+   "SEGUNDO JUZGADO DE INVESTIGACIÓN PREPARATORIA DE FLAGRANCIA",
+   "TERCER JUZGADO DE INVESTIGACIÓN PREPARATORIA DE FLAGRANCIA"
+  ],
+  "dependenciasObs": []
+ }
+];
+// El catálogo editable se almacena en un documento separado de Firestore.
+// Ninguna edición de contactos altera los oficios históricos (que guardan sus propios datos).
+const UID_ADMIN_CATALOGO='MmniSKpNWPN2saVja2wVTPaiBnn2';
+const RUTA_CATALOGO_CLOUD=['sigad_configuracion','catalogo_oficios'];
+let catalogoOficiosDB=null, catalogoCloudReady=false, catalogoCloudError='';
+let catalogoCloudApi=null, catalogoCloudIniciando=null, catalogoEsAdmin=false;
+const claveCatalogo=s=>String(s||'').trim().toLocaleUpperCase('es-PE').replace(/\s+/g,' ');
+const lineasCatalogo=s=>[...new Set(String(s||'').split(/\r?\n/).map(x=>x.trim()).filter(Boolean))];
+const nombreIdCatalogo=()=>uid();
+function baseCatalogoEditable(){
+ const dependencias=[...new Set(catalogoBaseDestinatarios.flatMap(p=>[...(p.dependencias||[]),...(p.dependenciasObs||[])]))].map(nombre=>({id:nombreIdCatalogo(),nombre,activo:true}));
+ return {personas:catalogoBaseDestinatarios.map(p=>({...p,id:nombreIdCatalogo(),activo:true,referencias:[...(p.referencias||[])],dependencias:[...(p.dependencias||[])],dependenciasObs:[...(p.dependenciasObs||[])]})),dependencias};
+}
+function datosCatalogoOficios(){
+ const fuente=catalogoOficiosDB;
+ const personas=(fuente?.personas||catalogoBaseDestinatarios).filter(x=>x.activo!==false).map(x=>({...x,nombre:String(x.nombre||'').trim(),cargo:String(x.cargo||'').trim()})).filter(x=>x.nombre);
+ const depsFuente=fuente ? (fuente.dependencias||[]).filter(x=>x.activo!==false).map(x=>String(x.nombre||'').trim()) : catalogoBaseDestinatarios.flatMap(p=>[...(p.dependencias||[]),...(p.dependenciasObs||[])]);
+ const dependencias=[...new Set(depsFuente.filter(Boolean))].sort((a,b)=>a.localeCompare(b,'es'));
+ const cargos=[...new Set(personas.map(x=>x.cargo).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'es'));
+ return {personas:personas.sort((a,b)=>a.nombre.localeCompare(b.nombre,'es')),dependencias,cargos};
+}
+const catalogoDestinatariosSelect=document.createElement('select');
+catalogoDestinatariosSelect.id='sigad-seleccionar-destinatario';
+catalogoDestinatariosSelect.setAttribute('aria-label','Seleccionar destinatario existente');
+catalogoDestinatariosSelect.style.cssText='margin-bottom:5px;width:100%';
+const destinatarioInput=$('#recipient');
+if(destinatarioInput)destinatarioInput.insertAdjacentElement('beforebegin',catalogoDestinatariosSelect);
+const catalogoDependenciasList=document.createElement('datalist');
+catalogoDependenciasList.id='sigad-lista-dependencias';
+document.body.appendChild(catalogoDependenciasList);
+const catalogoCargosList=document.createElement('datalist');
+catalogoCargosList.id='sigad-lista-cargos';
+document.body.appendChild(catalogoCargosList);
+const cargoInput=$('#recipientRole');
+if(cargoInput)cargoInput.setAttribute('list','sigad-lista-cargos');
+// El Word ofrece varios modelos para algunos módulos; cada referencia sigue siendo editable.
+const selectorModeloReferencia=document.createElement('select');
+selectorModeloReferencia.id='sigad-modelo-referencia';
+selectorModeloReferencia.setAttribute('aria-label','Modelo de oficio de referencia');
+selectorModeloReferencia.style.cssText='width:100%;margin:4px 0';
+selectorModeloReferencia.innerHTML='<option value="">Referencia libre / no sugerir</option>';
+const inputCorrelativoReferencia=document.createElement('input');
+inputCorrelativoReferencia.id='sigad-correlativo-referencia';
+inputCorrelativoReferencia.type='text';
+inputCorrelativoReferencia.inputMode='numeric';
+inputCorrelativoReferencia.maxLength=8;
+inputCorrelativoReferencia.placeholder='0000';
+inputCorrelativoReferencia.value='0000';
+inputCorrelativoReferencia.style.cssText='width:110px;max-width:35%;margin:4px 0';
+inputCorrelativoReferencia.title='Escriba solamente el correlativo. La nomenclatura completa del oficio se conserva.';
+const referenciaCampo=$('#references');
+if(referenciaCampo){
+ const bloque=document.createElement('div');
+ bloque.id='sigad-referencia-asistida';
+ bloque.style.cssText='margin:6px 0 7px;font-size:12px';
+ bloque.innerHTML='<div style="font-size:12px;color:var(--muted,#718096);margin-bottom:3px">Modelo de referencia (extraído de oficios 2026):</div>';
+ bloque.appendChild(selectorModeloReferencia);
+ const correlativo=document.createElement('label');
+ correlativo.style.cssText='display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-weight:400';
+ const texto=document.createElement('span');texto.textContent='Solo correlativo:';
+ correlativo.append(texto,inputCorrelativoReferencia);bloque.appendChild(correlativo);
+ (referenciaCampo.closest('label')||referenciaCampo).insertAdjacentElement('beforebegin',bloque);
+}
+function normalizarNombreDestinatario(t){return String(t||'').toLocaleUpperCase('es-PE').trim().replace(/^DR\.?\s*/,'').replace(/\s+/g,' ')}
+function buscarPersonaCatalogo(nombre){
+ const norm=normalizarNombreDestinatario(nombre);
+ return datosCatalogoOficios().personas.find(x=>normalizarNombreDestinatario(x.nombre)===norm)||null;
+}
+function actualizarDependenciasSegunPersona(persona){
+ const vigentes=datosCatalogoOficios().dependencias;
+ const vigentesSet=new Set(vigentes.map(claveCatalogo));
+ const solo=(persona?.dependencias||[]).filter(x=>!catalogoOficiosDB||vigentesSet.has(claveCatalogo(x)));
+ const adicionales=(persona?.dependenciasObs||[]).filter(x=>!catalogoOficiosDB||vigentesSet.has(claveCatalogo(x)));
+ const total=solo.length?[...new Set([...solo,...adicionales])]:vigentes;
+ catalogoDependenciasList.innerHTML=total.map(x=>`<option value="${esc(x)}"></option>`).join('');
+}
+function referenciaConNumero(modelo){
+ const digits=String(inputCorrelativoReferencia.value||'').replace(/[^0-9]/g,'').slice(0,8)||'0000';
+ const year=String($('#officeDate')?.value||today()).slice(0,4);
+ return String(modelo||'').replace(/(OFICIO\s+N[°º]\s*)0000/i,(_,p)=>p+digits.padStart(4,'0')).replace(/-2026(?=-)/g,'-'+year);
+}
+function actualizarModelosReferencia(persona,{modificar=false}={}){
+ const modelos=persona?.referencias||[];
+ const prev=selectorModeloReferencia.value;
+ selectorModeloReferencia.innerHTML='<option value="">Referencia libre / no sugerir</option>'+modelos.map((r,i)=>`<option value="${esc(r)}">${i===0?'Habitual · ':''}${esc(r)}</option>`).join('');
+ selectorModeloReferencia.value=modelos.includes(prev)?prev:(modelos[0]||'');
+ actualizarDependenciasSegunPersona(persona);
+ inputCorrelativoReferencia.disabled=!modelos.length;
+ if(modificar && !modelos.length && referenciaCampo?.dataset.sigadAutoRef==='si'){referenciaCampo.value='';delete referenciaCampo.dataset.sigadAutoRef;}
+ if(modificar && modelos.length && referenciaCampo && (!referenciaCampo.value.trim()||referenciaCampo.dataset.sigadAutoRef==='si')){
+   referenciaCampo.value=referenciaConNumero(selectorModeloReferencia.value);
+   referenciaCampo.dataset.sigadAutoRef='si';
+ }
+}
+selectorModeloReferencia.addEventListener('change',()=>{
+ if(!selectorModeloReferencia.value)return;
+ if(referenciaCampo){referenciaCampo.value=referenciaConNumero(selectorModeloReferencia.value);referenciaCampo.dataset.sigadAutoRef='si';}
+});
+inputCorrelativoReferencia.addEventListener('input',()=>{
+ if(selectorModeloReferencia.value && referenciaCampo){
+   referenciaCampo.value=referenciaConNumero(selectorModeloReferencia.value);
+   referenciaCampo.dataset.sigadAutoRef='si';
+ }
+});
+referenciaCampo?.addEventListener('input',()=>{referenciaCampo.dataset.sigadAutoRef='no'});
+
+function actualizarCatalogoOficios(){
+ const datos=datosCatalogoOficios();
+ const previo=catalogoDestinatariosSelect.value;
+ catalogoDestinatariosSelect.innerHTML='<option value="">Elegir destinatario registrado (o escribir abajo)...</option>'+
+  datos.personas.map(x=>`<option value="${esc(x.nombre)}">${esc(x.nombre)}</option>`).join('');
+ if(datos.personas.some(x=>x.nombre===previo))catalogoDestinatariosSelect.value=previo;
+ actualizarDependenciasSegunPersona(buscarPersonaCatalogo(destinatarioInput?.value));
+ catalogoCargosList.innerHTML=datos.cargos.map(x=>`<option value="${esc(x)}"></option>`).join('');
+}
+function ponerDestinatarioRegistrado(nombre){
+ const persona=buscarPersonaCatalogo(nombre);
+ if(!persona)return;
+ destinatarioInput.value=persona.nombre;
+ if(persona.cargo)cargoInput.value=persona.cargo;
+ actualizarModelosReferencia(persona,{modificar:!currentOfficeId});
+}
+catalogoDestinatariosSelect.addEventListener('change',()=>ponerDestinatarioRegistrado(catalogoDestinatariosSelect.value));
+destinatarioInput?.addEventListener('change',()=>ponerDestinatarioRegistrado(destinatarioInput.value));
+actualizarCatalogoOficios();
+window.addEventListener('sigad:datos-cargados',actualizarCatalogoOficios);
+
+// Administración centralizada del catálogo: visible solo para el UID de Administrador General.
+const btnAdministrarCatalogo=document.createElement('button');
+btnAdministrarCatalogo.type='button';
+btnAdministrarCatalogo.id='sigad-btn-administrar-catalogo';
+btnAdministrarCatalogo.textContent='Administrar catálogo de destinatarios y dependencias';
+btnAdministrarCatalogo.style.cssText='display:none;margin:7px 0 12px;padding:9px 12px;border-radius:7px;border:1px solid var(--line,#a1a1aa);background:var(--panel,#fff);color:var(--ink,#111827);font-weight:700;cursor:pointer;max-width:100%';
+if(destinatarioInput)catalogoDestinatariosSelect.insertAdjacentElement('afterend',btnAdministrarCatalogo);
+const estilosAdminCatalogo=document.createElement('style');
+estilosAdminCatalogo.textContent=`
+#sigad-dialog-catalogo{background:var(--panel,#fff);color:var(--ink,#111827);border:1px solid var(--line,#a1a1aa);border-radius:14px;padding:0;width:min(900px,96vw);max-height:88vh;box-shadow:0 16px 75px #0007}
+#sigad-dialog-catalogo::backdrop{background:#07101cca}
+#sigad-dialog-catalogo .sac-contenido{padding:19px 22px;max-height:84vh;overflow-y:auto}
+#sigad-dialog-catalogo .sac-top{display:flex;justify-content:space-between;align-items:center;gap:10px}
+#sigad-dialog-catalogo h2{margin:0;font-size:19px}
+#sigad-dialog-catalogo h3{font-size:15px;margin:0 0 12px}
+#sigad-dialog-catalogo .sac-tab{display:flex;flex-wrap:wrap;gap:8px;margin:15px 0}
+#sigad-dialog-catalogo .sac-tab button{min-width:130px}
+#sigad-dialog-catalogo .sac-grid{display:grid;grid-template-columns:36% minmax(0,1fr);gap:14px;align-items:start}
+#sigad-dialog-catalogo .sac-grid select[size]{height:270px;width:100%;box-sizing:border-box}
+#sigad-dialog-catalogo label{display:flex;flex-direction:column;gap:5px;font-size:12px;font-weight:650;margin-bottom:11px}
+#sigad-dialog-catalogo input:not([type=checkbox]),#sigad-dialog-catalogo textarea,#sigad-dialog-catalogo select{background:var(--panel,#fff);color:var(--ink,#111827);border:1px solid var(--line,#a1a1aa);border-radius:6px;padding:9px;font:inherit}
+#sigad-dialog-catalogo textarea{width:100%;min-height:60px;box-sizing:border-box;resize:vertical}
+#sigad-dialog-catalogo .sac-fila{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:8px}
+#sigad-dialog-catalogo .sac-fila button,#sigad-dialog-catalogo .sac-tab button,#sigad-dialog-catalogo .sac-top button{padding:9px 12px;border:1px solid var(--line,#a1a1aa);border-radius:7px;background:var(--panel,#fff);color:var(--ink,#111827);cursor:pointer;font-weight:700}
+#sigad-dialog-catalogo button.sac-primario{background:#85051c!important;color:#fff!important;border-color:#85051c!important}
+#sigad-dialog-catalogo .sac-aviso{font-size:12px;color:var(--muted,#64748b);line-height:1.5}
+#sigad-btn-administrar-catalogo{color:#182234!important;background:#fff!important;border-color:#8693a4!important}
+body.dark-theme #sigad-btn-administrar-catalogo,body[data-theme="dark"] #sigad-btn-administrar-catalogo{background:#24334c!important;color:#fff!important;border-color:#8693a4!important}
+body.dark-theme #sigad-dialog-catalogo .sac-fila button:not(.sac-primario),body.dark-theme #sigad-dialog-catalogo .sac-tab button:not(.sac-primario),body.dark-theme #sigad-dialog-catalogo .sac-top button,body[data-theme="dark"] #sigad-dialog-catalogo .sac-fila button:not(.sac-primario){background:#24334c!important;color:#fff!important;border-color:#8693a4!important}
+#sigad-dialog-catalogo #sac-estado{color:var(--ink,#111827);font-size:12px;min-height:16px;margin:6px 0}
+@media(max-width:600px){#sigad-dialog-catalogo .sac-grid{grid-template-columns:1fr}#sigad-dialog-catalogo .sac-grid select[size]{height:130px}}
+`;
+document.head.appendChild(estilosAdminCatalogo);
+const dialogCatalogo=document.createElement('dialog');
+dialogCatalogo.id='sigad-dialog-catalogo';
+dialogCatalogo.innerHTML=`<div class="sac-contenido">
+ <div class="sac-top"><h2>Catálogo institucional de oficios</h2><button type="button" id="sac-cerrar" aria-label="Cerrar">Cerrar ×</button></div>
+ <p class="sac-aviso">Los cambios se guardan en Firebase y afectan las sugerencias de los próximos oficios. No cambian los documentos emitidos.</p>
+ <div id="sac-estado" role="status" aria-live="polite"></div>
+ <div class="sac-tab"><button type="button" class="sac-primario" id="sac-ver-personas">Destinatarios y cargos</button><button type="button" id="sac-ver-dependencias">Dependencias / juzgados</button></div>
+ <section id="sac-panel-personas"><div class="sac-grid">
+  <div><h3>Destinatarios</h3><select size="11" id="sac-personas" aria-label="Lista de destinatarios"></select><div class="sac-fila"><button type="button" id="sac-nueva-persona">+ Nuevo destinatario</button></div></div>
+  <form id="sac-persona-form"><h3 id="sac-persona-titulo">Editar destinatario</h3>
+   <label>Nombres y apellidos<input id="sac-nombre" required maxlength="160" autocomplete="off"></label>
+   <label>Cargo institucional<input id="sac-cargo" required maxlength="230" autocomplete="off"></label>
+   <label>Modelos de referencia (uno por línea)<textarea id="sac-referencias" rows="3" placeholder="OFICIO N° 0000-2026-..."></textarea></label>
+   <label>Dependencias principales (una por línea)<textarea id="sac-deps-persona" rows="3"></textarea></label>
+   <label>Dependencias para observaciones (una por línea)<textarea id="sac-depsobs-persona" rows="2"></textarea></label>
+   <div class="sac-fila"><button class="sac-primario" type="submit" id="sac-guardar-persona">Guardar destinatario</button><button type="button" id="sac-desactivar-persona">Desactivar</button></div>
+  </form>
+ </div></section>
+ <section id="sac-panel-dependencias" hidden><div class="sac-grid">
+  <div><h3>Dependencias y juzgados</h3><select size="11" id="sac-dependencias" aria-label="Lista de dependencias"></select><div class="sac-fila"><button type="button" id="sac-nueva-dependencia">+ Nueva dependencia</button></div></div>
+  <form id="sac-dependencia-form"><h3 id="sac-dependencia-titulo">Editar dependencia</h3>
+   <label>Nombre oficial de la dependencia<input id="sac-nombre-dep" required maxlength="220" autocomplete="off"></label>
+   <div class="sac-fila"><button class="sac-primario" type="submit" id="sac-guardar-dependencia">Guardar dependencia</button><button type="button" id="sac-desactivar-dependencia">Desactivar</button></div>
+  </form>
+ </div></section>
+ <p class="sac-aviso">Desactivar oculta una opción de los nuevos oficios; no elimina registros históricos. El formulario del oficio continúa permitiendo escribir nombres libres.</p>
+ </div>`;
+document.body.appendChild(dialogCatalogo);
+const sac=id=>document.getElementById('sac-'+id);
+let idPersonaEnEdicion=null,idDependenciaEnEdicion=null,guardandoCatalogo=false;
+function estadoPanelCatalogo(mensaje,error=false){sac('estado').textContent=mensaje||'';sac('estado').style.color=error?'#e05462':'';}
+const catalogoInicialInmutable=baseCatalogoEditable();
+function catalogoEditableActual(){return JSON.parse(JSON.stringify(catalogoOficiosDB||catalogoInicialInmutable));}
+function renderListaPersonasCatalogo(idDeseado){
+ const fuente=catalogoEditableActual();
+ sac('personas').innerHTML=fuente.personas.slice().sort((a,b)=>a.nombre.localeCompare(b.nombre,'es')).map(p=>`<option value="${esc(p.id)}">${p.activo===false?'[INACTIVO] ':''}${esc(p.nombre)} — ${esc(p.cargo)}</option>`).join('');
+ if(idDeseado&&fuente.personas.some(p=>p.id===idDeseado))sac('personas').value=idDeseado;
+ else if(!idPersonaEnEdicion&&fuente.personas.length)sac('personas').selectedIndex=0;
+ seleccionarPersonaPanel(sac('personas').value);
+}
+function seleccionarPersonaPanel(id){
+ const p=catalogoEditableActual().personas.find(x=>x.id===id);
+ idPersonaEnEdicion=p?.id||null;
+ sac('persona-titulo').textContent=p?`Editar destinatario${p.activo===false?' (inactivo)':''}`:'Nuevo destinatario';
+ sac('nombre').value=p?.nombre||'';
+ sac('cargo').value=p?.cargo||'';
+ sac('referencias').value=(p?.referencias||[]).join('\n');
+ sac('deps-persona').value=(p?.dependencias||[]).join('\n');
+ sac('depsobs-persona').value=(p?.dependenciasObs||[]).join('\n');
+ sac('desactivar-persona').textContent=p?.activo===false?'Reactivar':'Desactivar';
+ sac('desactivar-persona').disabled=!p;
+}
+function renderListaDependenciasCatalogo(idDeseado){
+ const fuente=catalogoEditableActual();
+ sac('dependencias').innerHTML=fuente.dependencias.slice().sort((a,b)=>a.nombre.localeCompare(b.nombre,'es')).map(d=>`<option value="${esc(d.id)}">${d.activo===false?'[INACTIVA] ':''}${esc(d.nombre)}</option>`).join('');
+ if(idDeseado&&fuente.dependencias.some(d=>d.id===idDeseado))sac('dependencias').value=idDeseado;
+ else if(!idDependenciaEnEdicion&&fuente.dependencias.length)sac('dependencias').selectedIndex=0;
+ seleccionarDependenciaPanel(sac('dependencias').value);
+}
+function seleccionarDependenciaPanel(id){
+ const d=catalogoEditableActual().dependencias.find(x=>x.id===id);
+ idDependenciaEnEdicion=d?.id||null;
+ sac('dependencia-titulo').textContent=d?`Editar dependencia${d.activo===false?' (inactiva)':''}`:'Nueva dependencia';
+ sac('nombre-dep').value=d?.nombre||'';
+ sac('desactivar-dependencia').textContent=d?.activo===false?'Reactivar':'Desactivar';
+ sac('desactivar-dependencia').disabled=!d;
+}
+function abrirCatalogoAdmin(){
+ if(!catalogoEsAdmin)return;
+ if(!catalogoCloudReady){estadoPanelCatalogo(catalogoCloudError||'Conectando con Firebase. Vuelva a intentar.',true)}
+ else estadoPanelCatalogo('');
+ renderListaPersonasCatalogo();renderListaDependenciasCatalogo();
+ sac('guardar-persona').disabled=!catalogoCloudReady;
+ sac('guardar-dependencia').disabled=!catalogoCloudReady;
+ sac('desactivar-persona').disabled=!catalogoCloudReady;
+ sac('desactivar-dependencia').disabled=!catalogoCloudReady;
+ dialogCatalogo.showModal();
+}
+btnAdministrarCatalogo.addEventListener('click',abrirCatalogoAdmin);
+sac('cerrar').addEventListener('click',()=>dialogCatalogo.close());
+sac('ver-personas').addEventListener('click',()=>{sac('panel-personas').hidden=false;sac('panel-dependencias').hidden=true;sac('ver-personas').classList.add('sac-primario');sac('ver-dependencias').classList.remove('sac-primario')});
+sac('ver-dependencias').addEventListener('click',()=>{sac('panel-personas').hidden=true;sac('panel-dependencias').hidden=false;sac('ver-personas').classList.remove('sac-primario');sac('ver-dependencias').classList.add('sac-primario')});
+sac('personas').addEventListener('change',()=>seleccionarPersonaPanel(sac('personas').value));
+sac('dependencias').addEventListener('change',()=>seleccionarDependenciaPanel(sac('dependencias').value));
+sac('nueva-persona').addEventListener('click',()=>{sac('personas').selectedIndex=-1;seleccionarPersonaPanel(null);sac('nombre').focus()});
+sac('nueva-dependencia').addEventListener('click',()=>{sac('dependencias').selectedIndex=-1;seleccionarDependenciaPanel(null);sac('nombre-dep').focus()});
+async function guardarCatalogoFirestore(siguiente,descripcion){
+ if(!catalogoEsAdmin||!catalogoCloudReady||!catalogoCloudApi)throw Error('La cuenta no tiene permisos de administración del catálogo o no hay conexión.');
+ if(guardandoCatalogo)throw Error('Ya hay un cambio en curso.');
+ guardandoCatalogo=true;
+ try{
+  const {db,auth,doc,setDoc,serverTimestamp}=catalogoCloudApi;
+  if(auth.currentUser?.uid!==UID_ADMIN_CATALOGO)throw Error('La sesión administrativa cambió.');
+  const contenido={version:1,personas:siguiente.personas,dependencias:siguiente.dependencias,modificadoPor:auth.currentUser.uid,modificadoEn:serverTimestamp()};
+  await setDoc(doc(db,...RUTA_CATALOGO_CLOUD),contenido);
+  catalogoOficiosDB={personas:contenido.personas,dependencias:contenido.dependencias};
+  actualizarCatalogoOficios();
+  log('Catálogo institucional actualizado',descripcion);
+  estadoPanelCatalogo('Cambios guardados en Firebase.','');
+  toast('Catálogo actualizado correctamente.','success');
+ }finally{guardandoCatalogo=false}
+}
+sac('persona-form').addEventListener('submit',async ev=>{
+ ev.preventDefault();
+ const nombre=sac('nombre').value.trim(),cargo=sac('cargo').value.trim(),ref=lineasCatalogo(sac('referencias').value),deps=lineasCatalogo(sac('deps-persona').value),depsObs=lineasCatalogo(sac('depsobs-persona').value);
+ if(!nombre||!cargo)return estadoPanelCatalogo('Complete nombre y cargo.',true);
+ const nuevo=catalogoEditableActual();
+ if(nuevo.personas.some(x=>claveCatalogo(x.nombre)===claveCatalogo(nombre)&&x.id!==idPersonaEnEdicion))return estadoPanelCatalogo('Ese destinatario ya está registrado.',true);
+ const actual=nuevo.personas.find(x=>x.id===idPersonaEnEdicion),id=actual?.id||nombreIdCatalogo();
+ const dato={...(actual||{}),id,nombre,cargo,referencias:ref,dependencias:deps,dependenciasObs:depsObs,activo:actual?.activo!==false};
+ // Todo nombre de dependencia incorporado con la persona también se incorpora al catálogo global.
+ for(const dep of [...deps,...depsObs])if(!nuevo.dependencias.some(x=>claveCatalogo(x.nombre)===claveCatalogo(dep)))nuevo.dependencias.push({id:nombreIdCatalogo(),nombre:dep,activo:true});
+ if(actual)Object.assign(actual,dato);else nuevo.personas.push(dato);
+ try{await guardarCatalogoFirestore(nuevo,`Destinatario ${actual?'editado':'registrado'}: ${nombre}`);renderListaPersonasCatalogo(id);renderListaDependenciasCatalogo();}
+ catch(err){estadoPanelCatalogo('No se pudo guardar: '+err.message,true)}
+});
+sac('desactivar-persona').addEventListener('click',async()=>{
+ if(!idPersonaEnEdicion)return;
+ const nuevo=catalogoEditableActual(),p=nuevo.personas.find(x=>x.id===idPersonaEnEdicion);
+ if(!p)return;
+ const siguiente=p.activo===false;
+ if(!confirm(`¿${siguiente?'Reactivar':'Desactivar'} a ${p.nombre}? Los oficios anteriores no cambiarán.`))return;
+ p.activo=siguiente;
+ try{await guardarCatalogoFirestore(nuevo,`Destinatario ${siguiente?'reactivado':'desactivado'}: ${p.nombre}`);renderListaPersonasCatalogo(p.id)}catch(err){estadoPanelCatalogo('No se pudo actualizar: '+err.message,true)}
+});
+sac('dependencia-form').addEventListener('submit',async ev=>{
+ ev.preventDefault();const nombre=sac('nombre-dep').value.trim();if(!nombre)return estadoPanelCatalogo('Indique el nombre de la dependencia.',true);
+ const nuevo=catalogoEditableActual();
+ if(nuevo.dependencias.some(x=>claveCatalogo(x.nombre)===claveCatalogo(nombre)&&x.id!==idDependenciaEnEdicion))return estadoPanelCatalogo('La dependencia ya figura en el catálogo.',true);
+ const actual=nuevo.dependencias.find(x=>x.id===idDependenciaEnEdicion),id=actual?.id||nombreIdCatalogo();
+ if(actual){const previo=actual.nombre;actual.nombre=nombre;
+  // Corregir también listas de sugerencias asociadas, sin cambiar ningún oficio emitido.
+  nuevo.personas.forEach(persona=>{for(const tipo of ['dependencias','dependenciasObs'])persona[tipo]=(persona[tipo]||[]).map(d=>claveCatalogo(d)===claveCatalogo(previo)?nombre:d)});
+ }else nuevo.dependencias.push({id,nombre,activo:true});
+ try{await guardarCatalogoFirestore(nuevo,`Dependencia ${actual?'editada':'registrada'}: ${nombre}`);renderListaDependenciasCatalogo(id);renderListaPersonasCatalogo();}
+ catch(err){estadoPanelCatalogo('No se pudo guardar: '+err.message,true)}
+});
+sac('desactivar-dependencia').addEventListener('click',async()=>{
+ if(!idDependenciaEnEdicion)return;
+ const nuevo=catalogoEditableActual(),d=nuevo.dependencias.find(x=>x.id===idDependenciaEnEdicion);if(!d)return;
+ const siguiente=d.activo===false;
+ if(!confirm(`¿${siguiente?'Reactivar':'Desactivar'} la dependencia «${d.nombre}»? Los oficios guardados no cambiarán.`))return;
+ d.activo=siguiente;
+ try{await guardarCatalogoFirestore(nuevo,`Dependencia ${siguiente?'reactivada':'desactivada'}: ${d.nombre}`);renderListaDependenciasCatalogo(d.id)}catch(err){estadoPanelCatalogo('No se pudo actualizar: '+err.message,true)}
+});
+function limpiarCatalogoEnSesion(){catalogoOficiosDB=null;catalogoCloudReady=false;catalogoEsAdmin=false;catalogoCloudError='';btnAdministrarCatalogo.style.display='none';if(dialogCatalogo.open)dialogCatalogo.close();actualizarCatalogoOficios()}
+async function iniciarCatalogoFirebase(){
+ if(catalogoCloudIniciando)return catalogoCloudIniciando;
+ catalogoCloudIniciando=(async()=>{
+  const [appModule,authModule,storeModule]=await Promise.all([
+   import('https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js'),
+   import('https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js'),
+   import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js')]);
+  const app=appModule.getApps()[0];
+  if(!app)throw new Error('Firebase aún no está inicializado. Abra SIGAD con una sesión activa.');
+  const auth=authModule.getAuth(app),db=storeModule.getFirestore(app);
+  catalogoCloudApi={auth,db,doc:storeModule.doc,getDoc:storeModule.getDoc,setDoc:storeModule.setDoc,serverTimestamp:storeModule.serverTimestamp};
+  authModule.onAuthStateChanged(auth,async user=>{
+   if(!user){limpiarCatalogoEnSesion();return}
+   const usuarioVigente=user.uid;
+   catalogoEsAdmin=usuarioVigente===UID_ADMIN_CATALOGO;
+   btnAdministrarCatalogo.style.display=catalogoEsAdmin?'inline-flex':'none';
+   try{
+    const snap=await storeModule.getDoc(storeModule.doc(db,...RUTA_CATALOGO_CLOUD));
+    if(auth.currentUser?.uid!==usuarioVigente)return;
+    const data=snap.exists()?snap.data():null;
+    catalogoOficiosDB=data?{
+     personas:Array.isArray(data.personas)?data.personas:[],
+     dependencias:Array.isArray(data.dependencias)?data.dependencias:[]
+    }:null;
+    catalogoCloudReady=true;catalogoCloudError='';
+   }catch(err){
+    if(auth.currentUser?.uid!==usuarioVigente)return;
+    catalogoCloudReady=false;
+    catalogoCloudError='No se puede leer el catálogo de Firebase. Revise las reglas de Firestore: '+err.message;
+    console.warn(catalogoCloudError);
+   }
+   actualizarCatalogoOficios();
+  });
+ })().catch(err=>{catalogoCloudIniciando=null;catalogoCloudError=err.message;console.warn('Catálogo institucional:',err)});
+ return catalogoCloudIniciando;
+}
+window.addEventListener('sigad:acceso-verificado',e=>{if(e.detail?.ready)iniciarCatalogoFirebase()});
+window.addEventListener('load',()=>iniciarCatalogoFirebase());
+
+
 const infoRangoPaquetes=document.createElement('small');
 infoRangoPaquetes.id='sigad-info-rango-paquetes';
 infoRangoPaquetes.setAttribute('role','status');
@@ -65,7 +552,7 @@ infoRangoPaquetes.style.cssText='display:block;margin-top:5px;line-height:1.4;fo
 const inputFinRango=$('#rangeEnd');
 if(inputFinRango)inputFinRango.insertAdjacentElement('afterend',infoRangoPaquetes);
 function sincronizarPaquetesDelRango(){
- const datos=calcularPaquetesEntreCodigos($('#rangeStart')?.value,$('#rangeEnd')?.value);
+ const datos=calcularPaquetesEntreCodigos($('#rangeStart')?.value,$('#rangeEnd')?.value,modalidadOficio());
  const filas=$$('#dependencyRows tr');
  const unica=filas.length===1;
  filas.forEach(fila=>{
@@ -106,14 +593,26 @@ for(const selector of ['#rangeStart','#rangeEnd']){
 }
 
 $('#addDependency').onclick=()=>{$('#dependencyRows').append(depRow());reindex();sincronizarPaquetesDelRango()};$('#addObservation').onclick=()=>{$('#observationRows').append(obsRow());reindex();calc()};$('#addPackageObservation').onclick=()=>{$('#packageObservationRows').append(packObsRow());reindex();calc()};
-function collectOffice(){return{id:currentOfficeId||uid(),number:$('#officeNumber').value.trim(),date:$('#officeDate').value,recipient:$('#recipient').value.trim(),recipientRole:$('#recipientRole').value.trim(),references:$('#references').value.split(/\n+/).map(x=>x.trim()).filter(Boolean),referenceDate:$('#referenceDate').value,cargoType:$('#cargoType').value,rangeStart:$('#rangeStart').value.trim(),rangeEnd:$('#rangeEnd').value.trim(),dependencies:$$('#dependencyRows tr').map(r=>({name:$('.dep-name',r).value.trim(),packages:n($('.dep-packages',r).value),files:n($('.dep-files',r).value)})).filter(x=>x.name||x.packages||x.files),observations:$$('#observationRows tr').map(r=>({dep:$('.obs-dep',r).value.trim(),file:$('.obs-file',r).value.trim(),folios:n($('.obs-folios',r).value),type:$('.obs-type',r).value,text:$('.obs-text',r).value.trim()})).filter(x=>x.dep||x.file||x.text),packageObservations:$$('#packageObservationRows tr').map(r=>({dep:$('.pobs-dep',r).value.trim(),code:$('.pobs-code',r).value.trim(),folios:n($('.pobs-folios',r).value),text:$('.pobs-text',r).value.trim()})).filter(x=>x.dep||x.code||x.text)}}
+function collectOffice(){return{id:currentOfficeId||uid(),number:$('#officeNumber').value.trim(),date:$('#officeDate').value,recipient:$('#recipient').value.trim(),recipientRole:$('#recipientRole').value.trim(),references:$('#references').value.split(/\n+/).map(x=>x.trim()).filter(Boolean),referenceDate:$('#referenceDate').value,cargoType:$('#cargoType').value,modality:modalidadOficio(),rangeStart:$('#rangeStart').value.trim(),rangeEnd:$('#rangeEnd').value.trim(),dependencies:$$('#dependencyRows tr').map(r=>({name:$('.dep-name',r).value.trim(),packages:n($('.dep-packages',r).value),files:n($('.dep-files',r).value)})).filter(x=>x.name||x.packages||x.files),observations:$$('#observationRows tr').map(r=>({dep:$('.obs-dep',r).value.trim(),file:$('.obs-file',r).value.trim(),folios:n($('.obs-folios',r).value),type:$('.obs-type',r).value,text:$('.obs-text',r).value.trim()})).filter(x=>x.dep||x.file||x.text),packageObservations:$$('#packageObservationRows tr').map(r=>({dep:$('.pobs-dep',r).value.trim(),code:$('.pobs-code',r).value.trim(),folios:n($('.pobs-folios',r).value),text:$('.pobs-text',r).value.trim()})).filter(x=>x.dep||x.code||x.text)}}
 async function saveOffice(status='borrador'){if(!window.SIGADCloud?.ready()){try{if(!window.SIGADCloud?.load)throw Error('No se cargó el módulo compartido de documentos. Actualice la página e inténtelo de nuevo.');await window.SIGADCloud.load();}catch(err){toast('No se pudieron cargar los oficios: '+err.message,'error');return null;}}const r=collectOffice();if(!r.number||!r.date){alert('Complete el número y la fecha del oficio.');return null}r.status=status;r.updatedAt=new Date().toISOString();const all=read(K.offices);const i=all.findIndex(x=>x.id===r.id);if(i>=0){r.createdAt=all[i].createdAt||r.updatedAt;all[i]=r}else{r.createdAt=r.updatedAt;all.unshift(r)}try{await write(K.offices,all)}catch(err){toast('No se pudo guardar: '+err.message,'error');return null;}currentOfficeId=r.id;log(status==='generado'?'Oficio generado':'Borrador guardado',r.number);renderDashboard();return r}
 $('#btnSaveDraft').onclick=async()=>{if(await saveOffice('borrador'))alert('Borrador guardado correctamente.')};
-function suggestNumber(){const d=$('#officeDate').value||today(),year=d.slice(0,4),nums=read(K.offices).filter(x=>(x.date||'').startsWith(year)).map(x=>parseInt(String(x.number||'').match(/^(\d+)/)?.[1]||0)).filter(Boolean),next=(Math.max(0,...nums)+1).toString().padStart(3,'0');$('#officeNumber').value=`${next}-${year}-OAD-CSJSA/PJ`}
+function suggestNumber(){if(modalidadOficio()==='eliminacion'){const year=($('#officeDate').value||today()).slice(2,4);$('#officeNumber').value=`0000-${year}`;return;}const d=$('#officeDate').value||today(),year=d.slice(0,4),nums=read(K.offices).filter(x=>(x.date||'').startsWith(year)).map(x=>parseInt(String(x.number||'').match(/^(\d+)/)?.[1]||0)).filter(Boolean),next=(Math.max(0,...nums)+1).toString().padStart(3,'0');$('#officeNumber').value=`${next}-${year}-OAD-CSJSA/PJ`}
 $('#btnSuggestNumber').onclick=suggestNumber;
-function newOffice(){currentOfficeId=null;$('#officeForm').reset();$('#officeDate').value=today();$('#cargoType').value='digital';$('#dependencyRows').innerHTML='';$('#observationRows').innerHTML='';$('#packageObservationRows').innerHTML='';$('#dependencyRows').append(depRow());suggestNumber();reindex();sincronizarPaquetesDelRango();$('#historyPanel').classList.add('hidden')}
+function newOffice(){currentOfficeId=null;if(referenciaCampo)delete referenciaCampo.dataset.sigadAutoRef;inputCorrelativoReferencia.value='0000';selectorModeloReferencia.value='';$('#officeForm').reset();$('#officeModality').value='regular';actualizarModelosReferencia(null);$('#officeDate').value=today();$('#cargoType').value='digital';$('#dependencyRows').innerHTML='';$('#observationRows').innerHTML='';$('#packageObservationRows').innerHTML='';$('#dependencyRows').append(depRow());prepararModalidadOficio();reindex();sincronizarPaquetesDelRango();$('#historyPanel').classList.add('hidden')}
 $('#btnNew').onclick=newOffice;
-function dependencyPhrase(r){const names=r.dependencies.map(x=>x.name).filter(Boolean);if(names.length===1)return `correspondientes a ${names[0]}`;if(names.length>1)return'correspondientes a las dependencias detalladas a continuación';return'correspondientes a la documentación recepcionada'}
+function dependencyPhrase(r){const names=r.dependencies.map(x=>x.name).filter(Boolean);if(names.length===1){const k=names[0].toLocaleUpperCase('es-PE');return `correspondientes ${k.includes('SALA')?'a la':'al'} ${names[0]}`;}if(names.length>1)return'correspondientes a las dependencias detalladas a continuación';return'correspondientes a la documentación recepcionada'}
+// Redacción contrastada con oficios manuales 016, 017 y 018 de 2026.
+function textoIntroOficio(r){
+ const tp=total(r,'packages');const periodo=r.rangeStart||r.rangeEnd?` del ${r.rangeStart} al ${r.rangeEnd}`:'';
+ if(r.modality==='eliminacion')return `Tengo el agrado de dirigirme a usted para saludarlo cordialmente y, en atención al documento consignado en la referencia, devolverle los cargos correspondientes a los expedientes para eliminación, recepcionados por el Archivo Desconcentrado, debidamente numerados${periodo} (${tp} paquete${tp===1?'':'s'}), ${dependencyPhrase(r)}, según el siguiente detalle:`;
+ return `Tengo el agrado de dirigirme a Usted, para saludarlo cordialmente y en atención al documento anotado en la referencia, devolver a su despacho los ${r.cargoType==='digital'?'cargos en digital':'cargos'} de los Expedientes recepcionados por el Archivo Desconcentrado debidamente numerados${periodo} (${tp} paquete${tp===1?'':'s'}), ${dependencyPhrase(r)}, según el siguiente detalle:`;
+}
+function htmlIntroOficio(r){
+ const tp=total(r,'packages');const rango=r.rangeStart||r.rangeEnd?` del <b>${esc(r.rangeStart)}</b> al <b>${esc(r.rangeEnd)}</b>`:'';
+ if(r.modality==='eliminacion')return `Tengo el agrado de dirigirme a usted para saludarlo cordialmente y, en atención al documento consignado en la referencia, devolverle los cargos correspondientes a los expedientes para eliminación, recepcionados por el Archivo Desconcentrado, debidamente numerados${rango} (<b>${fmt(tp)} paquete${tp===1?'':'s'}</b>), ${esc(dependencyPhrase(r))}, según el siguiente detalle:`;
+ return `Tengo el agrado de dirigirme a Usted, para saludarlo cordialmente y en atención al documento anotado en la referencia, devolver a su despacho los ${r.cargoType==='digital'?'cargos en digital':'cargos'} de los Expedientes recepcionados por el Archivo Desconcentrado debidamente numerados${rango} (<b>${fmt(tp)} paquete${tp===1?'':'s'}</b>), ${esc(dependencyPhrase(r))}, según el siguiente detalle:`;
+}
+function omitirRecomendacionesGenericas(r){return r.modality==='eliminacion';}
 function exhortation(r){if(!r.observations.length&&!r.packageObservations.length)return'';const types=[...new Set(r.observations.map(x=>x.type).filter(Boolean))];const map={'FALTA RESOLUCIÓN DE ARCHIVO':'falta de resolución de archivo definitivo','NO ESTÁ EN LISTADO':'expedientes que no se encuentran consignados en el listado correspondiente','EXPEDIENTE DUPLICADO':'duplicidad de expedientes','RESOLUCIÓN NO CORRESPONDE':'resoluciones que no corresponden al expediente','FALTA TOMO':'falta de tomos','FOLIATURA / TOMOS':'inconsistencias en foliatura o tomos','OTRO':'otras observaciones en la documentación remitida'};const items=types.map(x=>map[x]).filter(Boolean);const desc=items.length?items.join(', ').replace(/, ([^,]*)$/,' y $1'):'observaciones en la documentación remitida';return`Por lo tanto, se exhorta a su despacho a disponer que el personal a su cargo verifique de manera previa y rigurosa la documentación remitida al Archivo Desconcentrado, observando estrictamente las disposiciones establecidas. Ello, en razón de haberse advertido ${desc}. Estas situaciones generan devoluciones innecesarias, reprocesos y una mayor carga laboral para esta dependencia. Por lo expuesto, se solicita adoptar las medidas correctivas necesarias a fin de evitar la reiteración de dichas observaciones en futuras remisiones.`}
 function previewHtml(r){
   const tp=total(r,'packages'),tf=total(r,'files');
@@ -140,7 +639,7 @@ function previewHtml(r){
   <div class="office-dest-role"><i>${esc(r.recipientRole)}</i></div>
   ${refs?`<div class="office-meta-pair"><b>REFERENCIA:</b><div>${refs}</div></div>`:''}
   ${r.referenceDate?`<div class="office-meta-pair"><b>FECHA:</b><div>${fmtDate(r.referenceDate)}</div></div>`:''}
-  <p>Tengo el agrado de dirigirme a Usted, para saludarlo cordialmente y en atención al documento anotado en la referencia, devolver a su despacho los ${r.cargoType==='digital'?'cargos en digital':'cargos'} de los Expedientes recepcionados por el Archivo Desconcentrado debidamente numerados${r.rangeStart||r.rangeEnd?` del <b>${esc(r.rangeStart)}</b> al <b>${esc(r.rangeEnd)}</b>`:''} (<b>${fmt(tp)} paquete${tp===1?'':'s'}</b>), ${dependencyPhrase(r)}, según el siguiente detalle:</p>
+  <p>${htmlIntroOficio(r)}</p>
   <table class="office-table">
     <thead><tr><th>ITEM</th><th>JUZGADO / DEPENDENCIA</th><th>CANTIDAD PAQUETES</th><th>CANTIDAD EXPEDIENTES</th></tr></thead>
     <tbody>
@@ -148,16 +647,16 @@ function previewHtml(r){
       <tr class="office-total-row"><td></td><td>TOTAL</td><td>${fmt(tp)}</td><td>${fmt(tf)}</td></tr>
     </tbody>
   </table>
-  <p>Para futuros requerimientos de expedientes al Archivo Desconcentrado, deberá consignarse en el oficio correspondiente la numeración del paquete asignado por esta oficina.</p>
+  ${omitirRecomendacionesGenericas(r)?'':'<p>Para futuros requerimientos de expedientes al Archivo Desconcentrado, deberá consignarse en el oficio correspondiente la numeración del paquete asignado por esta oficina.</p>'}
   ${obsIntro?`<p>${obsIntro}</p>`:''}
   ${countObs?`<table class="office-table"><thead><tr><th>ITEM</th><th>DEPENDENCIA</th><th>NRO EXPEDIENTE</th><th>FOLIOS</th><th>OBSERVACIONES</th></tr></thead><tbody>${obsRows}</tbody></table>`:''}
   ${countPack?`<table class="office-table"><thead><tr><th>ITEM</th><th>DEPENDENCIA</th><th>CÓDIGO DE PAQUETE</th><th>FOLIOS</th><th>OBSERVACIONES</th></tr></thead><tbody>${pobRows}</tbody></table>`:''}
-  ${exhortation(r)?`<p>${esc(exhortation(r))}</p>`:''}
+  ${!omitirRecomendacionesGenericas(r)&&exhortation(r)?`<p>${esc(exhortation(r))}</p>`:''}
   <p>Sin otro particular, hago propicia la oportunidad para expresarle los sentimientos de mi especial consideración y estima personal.</p>
   <p class="office-closing">Atentamente;</p>
   <div class="office-signature-block">
     <div class="office-sign-title">FIRMADO DIGITALMENTE POR:</div>
-    <div class="signature"><div class="line"></div><b>Responsable</b><br><b>Archivo Desconcentrado CSJSA</b></div>
+    <div class="signature"><div class="line"></div><b>Responsable</b><br><b>Archivo Desconcentrado - CSJSA</b></div>
   </div>`
 };
 function showPreview(){const r=collectOffice();if(!r.number||!r.date||!r.recipient){alert('Complete número, fecha y destinatario.');return}if(!r.dependencies.length){alert('Registre al menos una dependencia.');return}$('#officePreview').innerHTML=previewHtml(r);openModal('previewModal')}
@@ -179,7 +678,7 @@ function wordOfficeField(label,value){
 }
 function officeDocXml(r){
   const tp=total(r,'packages'),tf=total(r,'files');
-  const intro=`Tengo el agrado de dirigirme a Usted, para saludarlo cordialmente y en atención al documento anotado en la referencia, devolver a su despacho los ${r.cargoType==='digital'?'cargos en digital':'cargos'} de los Expedientes recepcionados por el Archivo Desconcentrado debidamente numerados${r.rangeStart||r.rangeEnd?` del ${r.rangeStart} al ${r.rangeEnd}`:''} (${tp} paquete${tp===1?'':'s'}), ${dependencyPhrase(r)}, según el siguiente detalle:`;
+  const intro=textoIntroOficio(r);
   const depRows=(r.dependencies||[]).map((x,i)=>[i+1,x.name,x.packages,x.files]);
   depRows.push([{text:'',noBorder:true},{text:'TOTAL',noBorder:true,bold:true,align:'right'},{text:tp,noBorder:true,bold:true},{text:tf,noBorder:true,bold:true}]);
   const obsRows=(r.observations||[]).map((x,i)=>[i+1,x.dep,x.file,x.folios,x.text||x.type]);
@@ -196,7 +695,7 @@ function officeDocXml(r){
   if(r.referenceDate)body+=wordOfficeField('FECHA:',fmtDate(r.referenceDate));
   body+=wP(intro,{align:'both',size:19,after:70});
   body+=wTable(['ITEM','JUZGADO / DEPENDENCIA','CANTIDAD PAQUETES','CANTIDAD EXPEDIENTES'],depRows,[650,4450,1800,2000],{headerSize:17,bodySize:17});
-  body+=wP('Para futuros requerimientos de expedientes al Archivo Desconcentrado, deberá consignarse en el oficio correspondiente la numeración del paquete asignado por esta oficina.',{align:'both',size:19,after:70});
+  if(!omitirRecomendacionesGenericas(r))body+=wP('Para futuros requerimientos de expedientes al Archivo Desconcentrado, deberá consignarse en el oficio correspondiente la numeración del paquete asignado por esta oficina.',{align:'both',size:19,after:70});
   const obs=(r.observations||[]).length,pob=(r.packageObservations||[]).length;
   if(obs||pob){
     body+=wP(`Asimismo, se ${obs+pob===1?'devuelve':'devuelven'} ${[obs?`${obs} expediente${obs===1?'':'s'}`:'',pob?`${pob} paquete${pob===1?'':'s'}`:''].filter(Boolean).join(' y ')} ${obs+pob===1?'observado':'observados'}, cuyas observaciones se detallan a continuación:`,{align:'both',size:19,after:65});
@@ -204,13 +703,13 @@ function officeDocXml(r){
   if(obsRows.length)body+=wTable(['ITEM','DEPENDENCIA','NRO EXPEDIENTE','FOLIOS','OBSERVACIONES'],obsRows,[650,2100,2200,800,3150],{headerSize:16,bodySize:17});
   if(pobRows.length)body+=wTable(['ITEM','DEPENDENCIA','CÓDIGO DE PAQUETE','FOLIOS','OBSERVACIONES'],pobRows,[650,2100,2200,800,3150],{headerSize:16,bodySize:17});
   const ex=exhortation(r);
-  if(ex)body+=wP(ex,{align:'both',size:19,after:85});
+  if(ex&&!omitirRecomendacionesGenericas(r))body+=wP(ex,{align:'both',size:19,after:85});
   body+=wP('Sin otro particular, hago propicia la oportunidad para expresarle los sentimientos de mi especial consideración y estima personal.',{align:'both',size:19,after:110});
   body+=wP('Atentamente;',{bold:true,italic:true,align:'center',size:19,after:160});
   body+=wP('FIRMADO DIGITALMENTE POR:',{bold:true,align:'center',size:19,after:1080});
   body+=wP('_____________________________',{align:'center',size:19,after:20});
   body+=wP('Responsable',{bold:true,align:'center',size:19,after:0});
-  body+=wP('Archivo Desconcentrado CSJSA',{bold:true,align:'center',size:19,after:0});
+  body+=wP('Archivo Desconcentrado - CSJSA',{bold:true,align:'center',size:19,after:0});
   return `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" xmlns:wp="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing" xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" xmlns:pic="http://schemas.openxmlformats.org/drawingml/2006/picture"><w:body>${body}<w:sectPr><w:pgSz w:w="11906" w:h="16838"/><w:pgMar w:top="650" w:right="1350" w:bottom="650" w:left="1350" w:header="350" w:footer="350"/></w:sectPr></w:body></w:document>`;
 }
 
@@ -282,7 +781,7 @@ async function generatePdf(){
   }
   y+=2;
   const tp=total(r,'packages'),tf=total(r,'files');
-  const intro=`Tengo el agrado de dirigirme a Usted, para saludarlo cordialmente y en atención al documento anotado en la referencia, devolver a su despacho los ${r.cargoType==='digital'?'cargos en digital':'cargos'} de los Expedientes recepcionados por el Archivo Desconcentrado debidamente numerados${r.rangeStart||r.rangeEnd?` del ${r.rangeStart} al ${r.rangeEnd}`:''} (${tp} paquete${tp===1?'':'s'}), ${dependencyPhrase(r)}, según el siguiente detalle:`;
+  const intro=textoIntroOficio(r);
   printParagraph(intro,{gap:2.7});
   const tableCommon={
     theme:'grid',tableWidth,margin:{left:tableLeft,right:tableLeft,top:nextTop,bottom},
@@ -308,7 +807,7 @@ async function generatePdf(){
     columnStyles:{0:{cellWidth:11},1:{cellWidth:75},2:{cellWidth:34},3:{cellWidth:36}},
   });
   y=doc.lastAutoTable.finalY+4.5;
-  printParagraph('Para futuros requerimientos de expedientes al Archivo Desconcentrado, deberá consignarse en el oficio correspondiente la numeración del paquete asignado por esta oficina.',{gap:2.7});
+  if(!omitirRecomendacionesGenericas(r))printParagraph('Para futuros requerimientos de expedientes al Archivo Desconcentrado, deberá consignarse en el oficio correspondiente la numeración del paquete asignado por esta oficina.',{gap:2.7});
   const obN=(r.observations||[]).length,pkN=(r.packageObservations||[]).length;
   if(obN||pkN){
     const obsIntro=`Asimismo, se ${obN+pkN===1?'devuelve':'devuelven'} ${[obN?`${obN} expediente${obN===1?'':'s'}`:'',pkN?`${pkN} paquete${pkN===1?'':'s'}`:''].filter(Boolean).join(' y ')} ${obN+pkN===1?'observado':'observados'}, cuyas observaciones se detallan a continuación:`;
@@ -334,7 +833,7 @@ async function generatePdf(){
     y=doc.lastAutoTable.finalY+3;
   }
   const ex=exhortation(r);
-  if(ex)printParagraph(ex,{fontSize:9.1,gap:3});
+  if(ex&&!omitirRecomendacionesGenericas(r))printParagraph(ex,{fontSize:9.1,gap:3});
   printParagraph('Sin otro particular, hago propicia la oportunidad para expresarle los sentimientos de mi especial consideración y estima personal.',{fontSize:9.2,gap:5});
   // La firma queda íntegra en una página; si el contenido crece se utiliza otra hoja.
   ensureHeight(45);
@@ -345,13 +844,13 @@ async function generatePdf(){
   y+=22;
   doc.setLineWidth(.2);doc.line(75,y,135,y);y+=4.3;
   doc.text('Responsable',pageW/2,y,{align:'center'});y+=4.1;
-  doc.text('Archivo Desconcentrado CSJSA',pageW/2,y,{align:'center'});
+  doc.text('Archivo Desconcentrado - CSJSA',pageW/2,y,{align:'center'});
   doc.save(`Oficio_${String(r.number||'').replace(/[^a-z0-9-]/gi,'_')}.pdf`);
   log('PDF generado',r.number);
 }
 
 $('#btnPdf').onclick=generatePdf;
-function loadOffice(id){const r=read(K.offices).find(x=>x.id===id);if(!r)return;currentOfficeId=r.id;$('#officeNumber').value=r.number||'';$('#officeDate').value=r.date||'';$('#recipient').value=r.recipient||'';$('#recipientRole').value=r.recipientRole||'';$('#references').value=(r.references||[]).join('\n');$('#referenceDate').value=r.referenceDate||'';$('#cargoType').value=r.cargoType||'digital';$('#rangeStart').value=r.rangeStart||'';$('#rangeEnd').value=r.rangeEnd||'';$('#dependencyRows').innerHTML='';(r.dependencies||[]).forEach(x=>$('#dependencyRows').append(depRow(x)));$('#observationRows').innerHTML='';(r.observations||[]).forEach(x=>$('#observationRows').append(obsRow(x)));$('#packageObservationRows').innerHTML='';(r.packageObservations||[]).forEach(x=>$('#packageObservationRows').append(packObsRow(x)));if(!r.dependencies?.length)$('#dependencyRows').append(depRow());reindex();sincronizarPaquetesDelRango();$('#historyPanel').classList.add('hidden');navigate('devoluciones')}
+function loadOffice(id){const r=read(K.offices).find(x=>x.id===id);if(!r)return;currentOfficeId=r.id;$('#officeNumber').value=r.number||'';$('#officeDate').value=r.date||'';$('#recipient').value=r.recipient||'';$('#recipientRole').value=r.recipientRole||'';$('#references').value=(r.references||[]).join('\n');$('#referenceDate').value=r.referenceDate||'';$('#cargoType').value=r.cargoType||'digital';$('#officeModality').value=r.modality||(/^[0-9]{3,}-[0-9]{2,4}$/.test(String(r.rangeStart||''))?'eliminacion':'regular');catalogoDestinatariosSelect.value=buscarPersonaCatalogo(r.recipient)?.nombre||'';actualizarModelosReferencia(buscarPersonaCatalogo(r.recipient),{modificar:false});if(referenciaCampo)referenciaCampo.dataset.sigadAutoRef='no';$('#rangeStart').value=r.rangeStart||'';$('#rangeEnd').value=r.rangeEnd||'';prepararModalidadOficio({numero:false});$('#dependencyRows').innerHTML='';(r.dependencies||[]).forEach(x=>$('#dependencyRows').append(depRow(x)));$('#observationRows').innerHTML='';(r.observations||[]).forEach(x=>$('#observationRows').append(obsRow(x)));$('#packageObservationRows').innerHTML='';(r.packageObservations||[]).forEach(x=>$('#packageObservationRows').append(packObsRow(x)));if(!r.dependencies?.length)$('#dependencyRows').append(depRow());reindex();sincronizarPaquetesDelRango();$('#historyPanel').classList.add('hidden');navigate('devoluciones')}
 function duplicateOffice(id){const r=read(K.offices).find(x=>x.id===id);if(!r)return;loadOffice(id);currentOfficeId=null;$('#officeNumber').value='';$('#officeDate').value=today();suggestNumber();log('Oficio duplicado',r.number)}
 async function deleteOffice(id){if(!confirm('¿Eliminar este registro? Esta acción quedará anotada en auditoría.'))return;const all=read(K.offices),r=all.find(x=>x.id===id);try{await write(K.offices,all.filter(x=>x.id!==id))}catch(err){toast('No se pudo eliminar: '+err.message,'error');return;}if(r)log('Oficio eliminado',r.number);renderHistory();renderDashboard()}
 function renderHistory(){const all=read(K.offices);$('#historyList').innerHTML=all.length?all.map(r=>`<div class="history-row"><strong>${esc(r.number)}</strong><span>${fmtDate(r.date)}</span><span>${esc(r.recipient)}</span><span>${fmt(total(r,'packages'))} paq.</span><span>${r.observations?.length||0} obs.</span><div class="history-actions"><button onclick="SIGAD.loadOffice('${r.id}')">Abrir</button><button onclick="SIGAD.duplicateOffice('${r.id}')">Duplicar</button><button onclick="SIGAD.deleteOffice('${r.id}')">Eliminar</button></div></div>`).join(''):'<div class="empty">Todavía no hay oficios guardados.</div>'}
@@ -422,5 +921,30 @@ window.SIGAD={getData:()=>({offices:read(K.offices),transfers:read(K.transfers),
 window.addEventListener('sigad:acceso-verificado',e=>{if(e.detail?.ready){window.SIGADCloud?.load?.().catch(err=>toast('No se pudieron consultar los registros compartidos: '+err.message,'error'));}else{document.querySelectorAll('.profile-name').forEach(x=>x.textContent='Usuario SIGAD');}});
 window.addEventListener('sigad:datos-cargados',()=>{renderDashboard();renderReports();renderAudit();renderHistory();renderTransfers();renderEliminations();renderArchivo360();});
 newOffice();renderDashboard();
+// Extensiones independientes: contraste accesible y depuración selectiva de registros.
+// No modifican el funcionamiento de los módulos operativos.
+const sigadContrast=document.createElement('link');
+sigadContrast.rel='stylesheet';sigadContrast.href='assets/contraste-botones.css?v=20261016';document.head.appendChild(sigadContrast);
+const sigadCleanScript=document.createElement('script');
+sigadCleanScript.type='module';sigadCleanScript.src='js/limpieza-pruebas.js?v=20261016';document.head.appendChild(sigadCleanScript);
+// Los módulos integrados se ejecutan dentro de un iframe: el CSS del padre no llega a ellos.
+function sigadApplyIframeContrast(frame){
+ try{
+  if(!frame?.contentDocument?.head||!frame.contentDocument.documentElement)return;
+  const doc=frame.contentDocument;
+  if(!doc.getElementById('sigad-iframe-button-contrast')){
+   const sheet=doc.createElement('link');sheet.id='sigad-iframe-button-contrast';sheet.rel='stylesheet';
+   sheet.href=new URL('modulos/archivo/sigad-contraste.css?v=20261016',document.baseURI).href;
+   doc.head.appendChild(sheet);
+  }
+  doc.documentElement.classList.toggle('sigad-host-dark',document.body.classList.contains('dark-theme'));
+ }catch(e){console.warn('No fue posible aplicar contraste al módulo integrado',e);}
+}
+document.addEventListener('load',e=>{if(e.target?.matches?.('iframe.archive-frame'))sigadApplyIframeContrast(e.target);},true);
+const sigadThemeObserver=new MutationObserver(()=>{
+ document.querySelectorAll('iframe.archive-frame').forEach(sigadApplyIframeContrast);
+});
+sigadThemeObserver.observe(document.body,{attributes:true,attributeFilter:['class']});
+document.querySelectorAll('iframe.archive-frame').forEach(sigadApplyIframeContrast);
 if('serviceWorker' in navigator&&location.protocol.startsWith('http'))window.addEventListener('load',()=>navigator.serviceWorker.register('service-worker.js').catch(()=>{}));
 })();
